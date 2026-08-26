@@ -1,0 +1,24 @@
+# Final Operations Checklist
+
+- [ ] AI correction memory connected to classifier
+- [ ] YouTube API costs mapped per endpoint
+- [ ] Quota hard-stop checked BEFORE every API request
+- [ ] Import state machine used by queue jobs
+- [ ] Place claim email verification
+- [ ] Place claim Admin approval
+- [ ] Creator/source records linked to videos
+- [ ] Trip lists API + UI
+- [ ] User history privacy/retention controls
+- [ ] Share buttons
+- [ ] QR codes generated from canonical public URLs
+- [ ] PWA icons generated
+- [ ] Service worker registered
+- [ ] Push provider configured
+- [ ] Android/iOS version manager
+- [ ] Maintenance flag Super Admin only
+- [ ] Feature flag audit logging
+- [ ] Error Center redacts secrets
+- [ ] Queue heartbeat
+- [ ] Scheduler heartbeat
+- [ ] Daily health test
+- [ ] Admin status dashboard

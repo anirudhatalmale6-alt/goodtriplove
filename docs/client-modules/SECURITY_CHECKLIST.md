@@ -1,0 +1,20 @@
+# Checklist
+- [ ] HTTPS everywhere
+- [ ] APP_DEBUG=false
+- [ ] Turnstile server-side Siteverify active
+- [ ] Login/register/password reset rate limiting
+- [ ] Temporary blocks active
+- [ ] Session regenerate after login
+- [ ] Session invalidate on logout
+- [ ] CSRF enabled
+- [ ] Blade escaped output `{{ }}`
+- [ ] No raw concatenated SQL
+- [ ] 6-digit email code expiry + attempt limit
+- [ ] Admin middleware + roles
+- [ ] Security audit logs
+- [ ] Suspicious activity alerts
+- [ ] Duplicate submission fingerprints
+- [ ] URL validation
+- [ ] Strict upload validation
+- [ ] Log rotation / retention
+- [ ] Backups tested

@@ -1,0 +1,4 @@
+<?php
+namespace App\Providers;
+use Illuminate\Cache\RateLimiting\Limit;use Illuminate\Http\Request;use Illuminate\Support\Facades\RateLimiter;use Illuminate\Support\ServiceProvider;
+class SecurityServiceProvider extends ServiceProvider { public function boot(): void { RateLimiter::for('login',fn(Request $r)=>[Limit::perMinutes(15,5)->by('login-email:'.mb_strtolower((string)$r->input('email'))),Limit::perMinutes(15,10)->by('login-ip:'.$r->ip())]); RateLimiter::for('register',fn(Request $r)=>Limit::perHour(5)->by('register-ip:'.$r->ip())); RateLimiter::for('submission',fn(Request $r)=>Limit::perHour(10)->by('submission:'.($r->user()?->id?:$r->ip()))); RateLimiter::for('password-reset',fn(Request $r)=>[Limit::perHour(5)->by('reset-email:'.mb_strtolower((string)$r->input('email'))),Limit::perHour(10)->by('reset-ip:'.$r->ip())]); } }

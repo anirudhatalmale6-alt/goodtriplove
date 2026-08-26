@@ -1,0 +1,42 @@
+# GoodTripLove — document root rules.
+# Copied into ~/domains/goodtriplove.com/public_html/.htaccess by deploy/deploy.sh
+
+# Force HTTPS. DirectAdmin's force_ssl option is accepted by the API but does
+# not take effect on this vhost, so the redirect lives here.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    # css/, js/ and img/ are symlinks into the application's public/ folder,
+    # so that a git pull is enough to update the assets.
+    Options +FollowSymLinks
+
+    RewriteEngine On
+
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "\.(bak|sql|log|env)$">
+    Require all denied
+</FilesMatch>

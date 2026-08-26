@@ -14,13 +14,13 @@ use Illuminate\Support\Facades\Schedule;
 
 // --- Video collector -------------------------------------------------
 Schedule::command('gtl:collect --queries=3')
-    ->hourly()->at(7)
+    ->hourlyAt(7)
     ->withoutOverlapping(30)
     ->runInBackground();
 
 // videos.list is 1 unit per 50 ids, so metrics can be refreshed often.
 Schedule::command('gtl:refresh-videos --limit=200')
-    ->everyThreeHours()->at(21)
+    ->cron('21 */3 * * *')
     ->withoutOverlapping(30);
 
 // The local model runs at night, off the visitor peak.
@@ -44,9 +44,9 @@ Schedule::command('security:backup-app')->dailyAt('02:30')->withoutOverlapping(1
 
 // --- Growth & operations module ----------------------------------------
 Schedule::command('growth:health')->everyFiveMinutes()->withoutOverlapping(10);
-Schedule::command('growth:data-quality')->hourly()->at(35)->withoutOverlapping(30);
-Schedule::command('growth:video-health')->hourly()->at(50)->withoutOverlapping(30);
-Schedule::command('growth:analytics-rollup')->hourly()->at(5)->withoutOverlapping(30);
+Schedule::command('growth:data-quality')->hourlyAt(35)->withoutOverlapping(30);
+Schedule::command('growth:video-health')->hourlyAt(50)->withoutOverlapping(30);
+Schedule::command('growth:analytics-rollup')->hourlyAt(5)->withoutOverlapping(30);
 Schedule::command('growth:seo-sitemap')->dailyAt('05:00')->withoutOverlapping(60);
 
 // --- Housekeeping -------------------------------------------------------

@@ -1,58 +1,123 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# GoodTripLove
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Video-first travel discovery: restaurants, local food, hotels, guest houses,
+bars and cafés, activities, places to visit and beaches — surfaced through the
+best public videos about each place, in six languages.
 
-## About Laravel
+Laravel 13 · PHP 8.3 · MariaDB · no build step (the production server has no
+Node, so CSS and JS are served as-is from `public/`).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## What is built
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Discovery
+- Countries → cities → categories → places, all editable from the admin.
+- Every place and every context exposes the five ranked sections from the
+  brief: **most viewed · most popular · trending · most relevant · recent**.
+- **GoodTripLove TV** — a continuous playlist that follows the visitor's
+  country, city and category (Portugal → Porto → Restaurants) and widens
+  automatically when the catalogue is still thin, so the player is never empty.
+- Search with filters and type-ahead suggestions, favourites, business area.
 
-## Learning Laravel
+### Video handling — embed only
+- Videos are found through the **official YouTube Data API v3** and played in
+  YouTube's own player. Nothing is downloaded, copied or re-hosted.
+- **Facade player**: a page shows thumbnails only. No `<iframe>` exists until
+  the visitor clicks — a homepage with 40 videos loads zero players.
+- No third-party player is created before cookie consent has been given.
+  Clicking play without consent shows the choice in place.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Video collector
+- Saved searches per country / city / category / language, run on a schedule.
+- **Metered quota**: the free tier is 10 000 units/day and one search costs
+  100, so the collector stops at a configurable hard-stop percentage rather
+  than letting Google refuse requests for the rest of the day.
+- Metrics are refreshed with `videos.list` (1 unit per 50 ids), which also
+  detects videos that were deleted, made private or had embedding disabled.
+- **Classification**: a deterministic text pass first (country, city, category,
+  language), then the local model only where that pass was unsure. If Ollama is
+  down the collector keeps working on the text pass alone.
+- **Place matching** refuses to attach a video unless the place name actually
+  appears in it — "a restaurant in Porto" must not attach itself to every
+  restaurant in Porto. Weak matches wait for moderation.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Ranking
+`popularity` blends reach (log-scaled views), engagement and freshness, so an
+old 3 M-view video does not permanently outrank a strong recent one.
+`trending` is a measured delta between two metric snapshots — a video with only
+one snapshot scores zero rather than guessing.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### Accounts and security
+- Registration → Cloudflare Turnstile → rate limit → **6-digit email code**.
+- Login throttling, temporary IP/account blocks, security log.
+- **Mandatory 2FA (TOTP)** for admin and super admin, with server-rendered QR
+  enrolment — the secret never leaves the server.
+- Free business registration; every listing and every video is published only
+  after an administrator approves it.
 
-## Agentic Development
+### Legal and compliance
+- Versioned legal documents per language, edited from the admin; acceptance and
+  consent records keep pointing at the exact version accepted.
+- Cookie banner with Accept / Reject / Customize, a permanent "manage cookies"
+  link, and consent enforced before any third-party embed.
+- Content reporting on every video with a reference number, a documented
+  decision cycle and an audit trail.
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### Administration
+Dashboard · videos (moderation, bulk actions, place linking) · places ·
+countries / cities / categories · video collector · ads and scrolling
+announcements · users · settings and app releases · Security Center ·
+Growth & Ops · data quality · reports · legal texts · service status ·
+YouTube quota · feature flags · error centre.
 
-```bash
-composer require laravel/boost --dev
+---
 
-php artisan boost:install
+## Local setup
+
+```
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+php artisan gtl:admin you@example.com          # creates the first admin
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+`php artisan gtl:demo-content` fills the site with clearly-labelled placeholder
+content for design review; `--purge` removes every trace of it.
 
-## Contributing
+## Scheduled work
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+One cron entry drives everything (see `routes/console.php`):
 
-## Code of Conduct
+```
+* * * * * cd /path/to/goodtriplove && php artisan schedule:run >> /dev/null 2>&1
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+The queue runs from the scheduler (`queue:work --stop-when-empty`) because the
+target server has neither Redis nor Supervisor.
 
-## Security Vulnerabilities
+## Commands
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Command | What it does |
+| --- | --- |
+| `gtl:collect` | Runs the due collector searches |
+| `gtl:refresh-videos` | Refreshes metrics and availability |
+| `gtl:classify` | Second-pass classification with the local model |
+| `gtl:rescore` | Recomputes popularity / trending / quality |
+| `gtl:admin {email}` | Creates or promotes an administrator |
+| `gtl:demo-content` | Placeholder content for design review |
 
-## License
+## Still to configure
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- `YOUTUBE_API_KEY` — without it the collector stays idle.
+- `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` — until set, the captcha check
+  is skipped (and logged) rather than locking everyone out.
+- SMTP — required for the 6-digit verification code.
+- `GTL_LEGAL_*` — publisher, address, registration number, publication
+  director, host and DPO. These are factual statements about a real company and
+  appear as visible `[[…]]` placeholders in the legal pages until filled in.
+- Legal texts in pt / es / it / de: fr and en are published; the other four fall
+  back to French with a visible notice until translations are published from
+  the admin.

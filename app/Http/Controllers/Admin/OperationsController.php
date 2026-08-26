@@ -11,7 +11,7 @@ use App\Services\YouTubeQuotaManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -93,6 +93,71 @@ class OperationsController extends Controller
         ]);
     }
 
+
+    /**
+     * Mail is not "configured" just because a mailer is set.
+     *
+     * If the sending domain publishes SPF that does not authorise this server,
+     * every verification code is sent into a hard fail and users simply never
+     * receive one — with no error anywhere in the application. So the check
+     * reads the actual DNS for the From domain.
+     */
+    private function mailCheck(): array
+    {
+        $mailer = config('mail.default');
+        $from = (string) config('mail.from.address');
+        $domain = Str::after($from, '@');
+
+        if ($mailer === 'log') {
+            return ['name' => 'Messagerie', 'status' => 'warning', 'detail' => 'mailer : log — aucun e-mail n’est réellement envoyé'];
+        }
+
+        if (! $domain) {
+            return ['name' => 'Messagerie', 'status' => 'warning', 'detail' => 'MAIL_FROM_ADDRESS non renseigné'];
+        }
+
+        $spf = '';
+        $mx = [];
+
+        try {
+            foreach (@dns_get_record($domain, DNS_TXT) ?: [] as $record) {
+                $text = $record['txt'] ?? '';
+
+                if (Str::startsWith($text, 'v=spf1')) {
+                    $spf = $text;
+                }
+            }
+
+            foreach (@dns_get_record($domain, DNS_MX) ?: [] as $record) {
+                $mx[] = $record['target'] ?? '';
+            }
+        } catch (\Throwable) {
+            return ['name' => 'Messagerie', 'status' => 'warning', 'detail' => 'DNS illisible pour '.$domain];
+        }
+
+        $serverIp = gethostbyname(gethostname());
+        $spfAuthorises = $spf !== '' && (
+            str_contains($spf, 'ip4:'.$serverIp)
+            || str_contains($spf, '+all')
+            || str_contains($spf, '~all') && ! str_contains($spf, '-all')
+        );
+
+        if ($spf !== '' && ! $spfAuthorises) {
+            return [
+                'name' => 'Messagerie',
+                'status' => 'down',
+                'detail' => 'SPF de '.$domain.' n’autorise pas ce serveur ('.$serverIp.') : "'.$spf
+                    .'". Les codes de vérification seront rejetés. MX : '.(implode(', ', $mx) ?: 'aucun'),
+            ];
+        }
+
+        return [
+            'name' => 'Messagerie',
+            'status' => 'ok',
+            'detail' => 'mailer : '.$mailer.' · expéditeur : '.$from.' · SPF : '.($spf ?: 'aucun enregistrement'),
+        ];
+    }
+
     /**
      * @return array<int, array{name: string, status: string, detail: string}>
      */
@@ -121,11 +186,7 @@ class OperationsController extends Controller
             'detail' => $lastRun ?: 'aucune exécution enregistrée',
         ];
 
-        $checks[] = [
-            'name' => 'Messagerie',
-            'status' => config('mail.default') === 'log' ? 'warning' : 'ok',
-            'detail' => 'mailer : '.config('mail.default'),
-        ];
+        $checks[] = $this->mailCheck();
 
         $checks[] = [
             'name' => 'API YouTube',

@@ -283,22 +283,39 @@ class VideoClassifier
         return false;
     }
 
+    /**
+     * Adjectives that decorate a search term without identifying a subject.
+     * "meilleurs bars" and "meilleurs hôtels" differ only in the noun, so
+     * indexing the adjective would make every category match every query.
+     */
+    private const QUALIFIERS = [
+        'meilleurs', 'meilleures', 'melhores', 'mejores', 'migliori', 'beste', 'best', 'top',
+        'les', 'des', 'the', 'and', 'shop', 'que', 'para', 'com', 'con', 'con', 'die', 'der',
+    ];
+
     private function matchCategory(string $haystack): ?Category
     {
         $best = null;
-        $bestHits = 0;
+        $bestScore = 0.0;
 
         foreach ($this->categoryIndex() as $entry) {
-            $hits = 0;
+            $score = 0.0;
 
-            foreach ($entry['terms'] as $term) {
-                if ($this->containsWord($haystack, $term)) {
-                    $hits++;
+            // A whole phrase is far stronger evidence than one of its words.
+            foreach ($entry['phrases'] as $phrase) {
+                if ($this->containsWord($haystack, $phrase)) {
+                    $score += 2.0;
                 }
             }
 
-            if ($hits > $bestHits) {
-                $bestHits = $hits;
+            foreach ($entry['words'] as $word) {
+                if ($this->containsWord($haystack, $word, plural: true)) {
+                    $score += 1.0;
+                }
+            }
+
+            if ($score > $bestScore) {
+                $bestScore = $score;
                 $best = $entry['id'];
             }
         }
@@ -310,7 +327,7 @@ class VideoClassifier
      * Word-boundary match on the unaccented forms, so "porto" does not fire on
      * "opportunity" and "Le Porto" still matches "porto".
      */
-    private function containsWord(string $haystack, string $needle): bool
+    private function containsWord(string $haystack, string $needle, bool $plural = false): bool
     {
         $needle = trim(Str::lower(Str::ascii($needle)));
 
@@ -318,7 +335,18 @@ class VideoClassifier
             return false;
         }
 
-        return (bool) preg_match('/(?<![\p{L}])'.preg_quote($needle, '/').'(?![\p{L}])/u', Str::ascii($haystack));
+        $pattern = preg_quote($needle, '/');
+
+        // Category nouns only. "bar" must also match "bars", "praia" "praias",
+        // "hotel" "hoteles". Never applied to place names: Porto and Portos are
+        // not the same thing, and a false city is worse than a missed one.
+        if ($plural) {
+            $pattern = Str::endsWith($needle, 's')
+                ? preg_quote(Str::beforeLast($needle, 's'), '/').'(?:s|es)?'
+                : $pattern.'(?:s|es)?';
+        }
+
+        return (bool) preg_match('/(?<![\p{L}])'.$pattern.'(?![\p{L}])/u', Str::ascii($haystack));
     }
 
     private function guessLanguage(string $text): ?string
@@ -382,15 +410,34 @@ class VideoClassifier
     {
         return Cache::remember('classifier:categories', 3600, function () {
             return Category::active()->get()->map(function (Category $category) {
-                $terms = array_merge(array_values((array) $category->name), [$category->slug]);
+                $phrases = array_merge(array_values((array) $category->name), [$category->slug]);
 
                 foreach ((array) $category->search_terms as $localeTerms) {
-                    $terms = array_merge($terms, (array) $localeTerms);
+                    $phrases = array_merge($phrases, (array) $localeTerms);
+                }
+
+                $phrases = array_values(array_unique(array_filter($phrases)));
+
+                // Every stored term is a PHRASE — "Bars & cafés", "meilleurs
+                // bars", "melhores bares". Matched whole, they never fire on a
+                // title that just says "Bars", which is how "Lisbonne : Bars
+                // insolites" and "Bar Funchal Madeira" were being discarded.
+                // So keep the phrases (precise, worth more) and also index the
+                // individual nouns inside them (broader, worth less).
+                $words = [];
+
+                foreach ($phrases as $phrase) {
+                    foreach (preg_split('/[^\p{L}]+/u', Str::lower($phrase), -1, PREG_SPLIT_NO_EMPTY) as $word) {
+                        if (Str::length($word) >= 3 && ! in_array($word, self::QUALIFIERS, true)) {
+                            $words[] = $word;
+                        }
+                    }
                 }
 
                 return [
                     'id' => $category->id,
-                    'terms' => array_values(array_unique(array_filter($terms))),
+                    'phrases' => $phrases,
+                    'words' => array_values(array_diff(array_unique($words), $phrases)),
                 ];
             })->all();
         });

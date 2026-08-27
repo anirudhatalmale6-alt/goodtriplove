@@ -104,10 +104,30 @@ target server has neither Redis nor Supervisor.
 | --- | --- |
 | `gtl:collect` | Runs the due collector searches |
 | `gtl:refresh-videos` | Refreshes metrics and availability |
-| `gtl:classify` | Second-pass classification with the local model |
+| `gtl:classify` | Classification. `--rescan` re-examines everything, not only unresolved rows |
+| `gtl:prune-videos` | Re-judges stored videos against the relevance gate. Dry run unless `--force` |
 | `gtl:rescore` | Recomputes popularity / trending / quality |
 | `gtl:admin {email}` | Creates or promotes an administrator |
 | `gtl:demo-content` | Placeholder content for design review |
+
+## Why the collector rejects results
+
+YouTube's search is associative, not literal, so a query is a hint rather than a
+filter. Searching `melhores bares Madeira` returns carpentry, paint and decking
+videos, because *madeira* is Portuguese for **wood**; a restaurants query
+returned *Restaurant Tycoon 3*. On the first live run, 39% of everything
+imported had nothing to do with travel.
+
+A result is therefore only stored if its text **names a place the site covers**
+*and* either matches a category or reads as a travel video (`cidade`, `ilha`,
+`itinéraire`, `things to do`… in all six languages). Rejections are counted on
+the run and a few examples are recorded in its message, so a query that discards
+20 of 25 results is visible rather than looking like a query that found 5.
+
+The gate is a heuristic and will occasionally be wrong in both directions, which
+is why nothing reaches the public site without administrator approval.
+`tests/Feature/VideoRelevanceTest.php` pins its behaviour against the real
+titles — good and bad — that shaped it; run it before changing the rules.
 
 ## Still to configure
 

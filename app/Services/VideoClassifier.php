@@ -280,6 +280,17 @@ class VideoClassifier
             'viaggio', 'viaggiare', 'visitare', 'itinerario', 'consigli', 'scoprire',
             // de
             'reise', 'reisen', 'besuchen', 'sehenswurdigkeiten', 'tipps', 'entdecken',
+
+            // Place-descriptor nouns. "PORTO a cidade mais incrível de
+            // PORTUGAL" is plainly a travel video, but it names no category and
+            // uses no verb of travelling, so it was being rejected. These are
+            // only ever consulted after a place we cover has been named, and a
+            // carpentry video says "madeira" without ever saying "cidade".
+            'cidade', 'ville', 'city', 'ciudad', 'citta', 'stadt',
+            'ilha', 'ile', 'island', 'isla', 'isola', 'insel',
+            'village', 'pueblo', 'borgo', 'dorf', 'quartier', 'bairro', 'barrio',
+            'centro historico', 'vieille ville', 'old town', 'altstadt',
+            'destination', 'destino', 'destinazione', 'reiseziel',
         ];
 
         foreach ($terms as $term) {

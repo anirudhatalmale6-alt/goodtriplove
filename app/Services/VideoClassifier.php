@@ -312,7 +312,13 @@ class VideoClassifier
      */
     private const QUALIFIERS = [
         'meilleurs', 'meilleures', 'melhores', 'mejores', 'migliori', 'beste', 'best', 'top',
-        'les', 'des', 'the', 'and', 'shop', 'que', 'para', 'com', 'con', 'con', 'die', 'der',
+        'les', 'des', 'the', 'and', 'shop', 'que', 'para', 'com', 'con', 'die', 'der',
+
+        // Generic dwelling nouns, excluded as STANDALONE terms only. "casa"
+        // means house, so on its own it matched prefabricated-cabin and decking
+        // videos. The precise phrases they came from — "casa de hóspedes",
+        // "guest house", "chambre d'hôtes" — still match, and score double.
+        'casa', 'casas', 'maison', 'maisons', 'house', 'houses', 'haus', 'home', 'homes',
     ];
 
     /**

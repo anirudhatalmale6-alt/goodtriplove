@@ -128,6 +128,7 @@ class VideoCollectorService
             $units += $details['units'];
 
             $skipped = 0;
+            $skippedTitles = [];
 
             foreach ($details['items'] as $item) {
                 // Judge relevance BEFORE the row exists. Storing everything and
@@ -135,6 +136,10 @@ class VideoCollectorService
                 // noise by hand, which is the job we are meant to be doing.
                 if (! $this->isRelevant($item, $query)) {
                     $skipped++;
+
+                    if (count($skippedTitles) < 3) {
+                        $skippedTitles[] = Str::limit((string) data_get($item, 'snippet.title'), 60);
+                    }
 
                     continue;
                 }
@@ -151,7 +156,12 @@ class VideoCollectorService
                 'items_updated' => $updated,
                 'items_skipped' => $skipped,
                 'finished_at' => now(),
-                'message' => $skipped ? $skipped.' off-topic result(s) rejected' : null,
+                // Named examples, not just a count: the administrator can then
+                // judge whether the gate is being sensible without shell access
+                // to the log, which is where the reasons would otherwise sit.
+                'message' => $skipped
+                    ? Str::limit($skipped.' off-topic result(s) rejected — e.g. '.implode('; ', $skippedTitles), 480)
+                    : null,
             ]);
 
             $query->update([

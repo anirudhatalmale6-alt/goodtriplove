@@ -45,11 +45,20 @@ class VideoClassifier
             return ['relevant' => false, 'reason' => 'no place from our geography named in the text'];
         }
 
-        if (! $this->matchCategory($haystack)) {
-            return ['relevant' => false, 'reason' => 'names a place but nothing about food, lodging or things to do'];
+        if ($this->matchCategory($haystack)) {
+            return ['relevant' => true, 'reason' => 'place and subject both present'];
         }
 
-        return ['relevant' => true, 'reason' => 'place and subject both present'];
+        // A general travel video about a city we cover — "48 tips before
+        // visiting Lisbon", "5 erreurs à ne pas faire à Madère" — belongs on
+        // the site even though it is about no single category. Requiring a
+        // category here threw away good content. Woodworking clips still fail:
+        // they satisfy neither this nor the place test.
+        if ($this->matchesTravelIntent($haystack)) {
+            return ['relevant' => true, 'reason' => 'general travel video about a place we cover'];
+        }
+
+        return ['relevant' => false, 'reason' => 'names a place but nothing about travel, food, lodging or things to do'];
     }
 
     public function classify(Video $video, array $context = []): Video
@@ -236,6 +245,42 @@ class VideoClassifier
         }
 
         return null;
+    }
+
+    /**
+     * Words that mark a video as being about travelling somewhere, in the six
+     * languages the site speaks. Only ever consulted once a place we cover has
+     * already been named, so these are not sensitive on their own.
+     */
+    private function matchesTravelIntent(string $haystack): bool
+    {
+        static $terms = [
+            // fr
+            'voyage', 'voyager', 'visiter', 'visite', 'sejour', 'escapade', 'itineraire',
+            'que faire', 'guide', 'decouvrir', 'incontournable', 'erreurs', 'conseils',
+            // en
+            'travel', 'trip', 'visit', 'visiting', 'itinerary', 'things to do', 'guide',
+            'tour', 'weekend', 'days in', 'hours in', 'tips', 'explore', 'discover',
+            // pt
+            'viagem', 'viajar', 'visitar', 'roteiro', 'passeio', 'dicas', 'descobrir',
+            // es
+            'viaje', 'viajar', 'visitar', 'ruta', 'consejos', 'descubrir', 'que ver',
+            // it
+            'viaggio', 'viaggiare', 'visitare', 'itinerario', 'consigli', 'scoprire',
+            // de
+            'reise', 'reisen', 'besuchen', 'sehenswurdigkeiten', 'tipps', 'entdecken',
+        ];
+
+        foreach ($terms as $term) {
+            // containsWord() folds accents on both sides, so "itineraire"
+            // matches "itinéraire". Do not pre-filter with a raw Str::contains:
+            // it compares the unfolded haystack and would reject exactly those.
+            if ($this->containsWord($haystack, $term)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function matchCategory(string $haystack): ?Category

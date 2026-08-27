@@ -56,10 +56,21 @@ class ClassifyVideosCommand extends Command
         $resolved = 0;
         $changed = 0;
 
+        $videos->load('collectorQuery');
+
         foreach ($videos as $video) {
             $before = $video->category_id;
 
-            $classifier->classify($video);
+            // Hand back the search that originally found this video, so a
+            // re-run can still recognise agreement between the video's own
+            // words and the query. Without it every rescan scored strictly
+            // lower than the original import.
+            $classifier->classify($video, array_filter([
+                'country_id' => $video->collectorQuery?->country_id,
+                'city_id' => $video->collectorQuery?->city_id,
+                'category_id' => $video->collectorQuery?->category_id,
+            ]));
+
             $video->save();
 
             if ($video->category_id !== $before) {

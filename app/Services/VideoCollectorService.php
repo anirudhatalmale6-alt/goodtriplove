@@ -268,6 +268,11 @@ class VideoCollectorService
             'source' => 'collector',
         ]);
 
+        // Kept so a later re-classification can still tell whether the video's
+        // own words agree with the search that found it — the strongest signal
+        // the classifier has, and previously discarded after import.
+        $video->collector_query_id = $query?->id ?? $video->collector_query_id;
+
         if ($isNew) {
             $video->status = Video::STATUS_PENDING;
         }

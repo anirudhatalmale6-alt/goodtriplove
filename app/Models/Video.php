@@ -46,6 +46,12 @@ class Video extends Model
         return $this->belongsTo(Country::class);
     }
 
+    /** The saved search that imported this video, when it came from the collector. */
+    public function collectorQuery(): BelongsTo
+    {
+        return $this->belongsTo(CollectorQuery::class, 'collector_query_id');
+    }
+
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);

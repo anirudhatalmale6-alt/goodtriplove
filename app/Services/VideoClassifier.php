@@ -21,6 +21,37 @@ class VideoClassifier
 {
     public function __construct(private OllamaClient $ollama) {}
 
+    /**
+     * Is this result plausibly a travel video about the place we searched for?
+     *
+     * YouTube's search is associative, not literal, so a query is only a hint.
+     * "melhores bares Madeira" returned carpentry, furniture and paint videos,
+     * because *madeira* is Portuguese for wood; "Restaurant Tycoon 3" arrived
+     * on a restaurants query. Importing those makes the site look abandoned.
+     *
+     * The test is deliberately conjunctive: the text must name a place we cover
+     * AND say something about the subject. Either alone is satisfied by far too
+     * much of YouTube.
+     *
+     * @return array{relevant: bool, reason: string}
+     */
+    public function relevance(Video $video, ?int $countryId = null): array
+    {
+        $haystack = Str::lower($video->title.' '.Str::limit((string) $video->description, 600));
+
+        $place = $this->matchCity($haystack, $countryId) ?: $this->matchCountry($haystack);
+
+        if (! $place) {
+            return ['relevant' => false, 'reason' => 'no place from our geography named in the text'];
+        }
+
+        if (! $this->matchCategory($haystack)) {
+            return ['relevant' => false, 'reason' => 'names a place but nothing about food, lodging or things to do'];
+        }
+
+        return ['relevant' => true, 'reason' => 'place and subject both present'];
+    }
+
     public function classify(Video $video, array $context = []): Video
     {
         $haystack = Str::lower($video->title.' '.Str::limit((string) $video->description, 600));

@@ -127,7 +127,18 @@ class VideoCollectorService
             $details = $this->youtube->videos($ids);
             $units += $details['units'];
 
+            $skipped = 0;
+
             foreach ($details['items'] as $item) {
+                // Judge relevance BEFORE the row exists. Storing everything and
+                // filtering later means the administrator has to reject the
+                // noise by hand, which is the job we are meant to be doing.
+                if (! $this->isRelevant($item, $query)) {
+                    $skipped++;
+
+                    continue;
+                }
+
                 $outcome = $this->importItem($item, $query);
                 $outcome === 'created' ? $created++ : $updated++;
             }
@@ -138,7 +149,9 @@ class VideoCollectorService
                 'items_returned' => count($details['items']),
                 'items_created' => $created,
                 'items_updated' => $updated,
+                'items_skipped' => $skipped,
                 'finished_at' => now(),
+                'message' => $skipped ? $skipped.' off-topic result(s) rejected' : null,
             ]);
 
             $query->update([
@@ -172,6 +185,41 @@ class VideoCollectorService
 
             return ['status' => 'failed', 'created' => $created, 'updated' => $updated, 'units' => $units, 'quota' => false, 'error' => $e->getMessage()];
         }
+    }
+
+    /**
+     * Relevance gate for a raw videos.list item, evaluated on an unsaved Video
+     * so nothing touches the database until it has passed.
+     */
+    private function isRelevant(array $item, CollectorQuery $query): bool
+    {
+        // An already-known video keeps its place: a human may have approved it,
+        // and refreshing metrics must never silently drop it.
+        $exists = Video::where('provider', 'youtube')
+            ->where('provider_video_id', data_get($item, 'id'))
+            ->exists();
+
+        if ($exists) {
+            return true;
+        }
+
+        $probe = new Video([
+            'title' => (string) data_get($item, 'snippet.title'),
+            'description' => (string) data_get($item, 'snippet.description'),
+        ]);
+
+        $verdict = $this->classifier->relevance($probe, $query->country_id);
+
+        if (! $verdict['relevant']) {
+            Log::info('Collector rejected an off-topic result', [
+                'query' => $query->id,
+                'video' => data_get($item, 'id'),
+                'title' => Str::limit((string) data_get($item, 'snippet.title'), 90),
+                'reason' => $verdict['reason'],
+            ]);
+        }
+
+        return $verdict['relevant'];
     }
 
     /**

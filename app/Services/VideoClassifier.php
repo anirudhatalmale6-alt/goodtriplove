@@ -37,7 +37,9 @@ class VideoClassifier
      */
     public function relevance(Video $video, ?int $countryId = null): array
     {
-        $haystack = Str::lower($video->title.' '.Str::limit((string) $video->description, 600));
+        $title = Str::lower((string) $video->title);
+        $description = Str::lower(Str::limit((string) $video->description, 600));
+        $haystack = $title.' '.$description;
 
         $place = $this->matchCity($haystack, $countryId) ?: $this->matchCountry($haystack);
 
@@ -45,7 +47,7 @@ class VideoClassifier
             return ['relevant' => false, 'reason' => 'no place from our geography named in the text'];
         }
 
-        if ($this->matchCategory($haystack)) {
+        if ($this->matchCategory($title, $description)) {
             return ['relevant' => true, 'reason' => 'place and subject both present'];
         }
 
@@ -63,7 +65,9 @@ class VideoClassifier
 
     public function classify(Video $video, array $context = []): Video
     {
-        $haystack = Str::lower($video->title.' '.Str::limit((string) $video->description, 600));
+        $title = Str::lower((string) $video->title);
+        $description = Str::lower(Str::limit((string) $video->description, 600));
+        $haystack = $title.' '.$description;
 
         $countryId = $context['country_id'] ?? null;
         $cityId = $context['city_id'] ?? null;
@@ -105,7 +109,7 @@ class VideoClassifier
             $geoConfidence += 0.2;
         }
 
-        $matchedCategory = $this->matchCategory($haystack);
+        $matchedCategory = $this->matchCategory($title, $description);
         $queryCategoryId = $categoryId;
 
         if ($matchedCategory && $queryCategoryId && $matchedCategory->id === $queryCategoryId) {
@@ -293,7 +297,15 @@ class VideoClassifier
         'les', 'des', 'the', 'and', 'shop', 'que', 'para', 'com', 'con', 'con', 'die', 'der',
     ];
 
-    private function matchCategory(string $haystack): ?Category
+    /**
+     * The title is what the video is about; the description is where the
+     * creator lists their gear, their other channels and every place they have
+     * ever filmed. Weighting them equally is how "Beaches in Porto" ended up
+     * under Activities — the word "beaches" appeared once in the title and the
+     * description mentioned hiking, tours and restaurants. Title evidence is
+     * therefore worth three times description evidence.
+     */
+    private function matchCategory(string $title, string $description = ''): ?Category
     {
         $best = null;
         $bestScore = 0.0;
@@ -301,16 +313,22 @@ class VideoClassifier
         foreach ($this->categoryIndex() as $entry) {
             $score = 0.0;
 
-            // A whole phrase is far stronger evidence than one of its words.
-            foreach ($entry['phrases'] as $phrase) {
-                if ($this->containsWord($haystack, $phrase)) {
-                    $score += 2.0;
+            foreach ([[$title, 3.0], [$description, 1.0]] as [$text, $weight]) {
+                if ($text === '') {
+                    continue;
                 }
-            }
 
-            foreach ($entry['words'] as $word) {
-                if ($this->containsWord($haystack, $word, plural: true)) {
-                    $score += 1.0;
+                // A whole phrase is far stronger evidence than one of its words.
+                foreach ($entry['phrases'] as $phrase) {
+                    if ($this->containsWord($text, $phrase)) {
+                        $score += 2.0 * $weight;
+                    }
+                }
+
+                foreach ($entry['words'] as $word) {
+                    if ($this->containsWord($text, $word, plural: true)) {
+                        $score += 1.0 * $weight;
+                    }
                 }
             }
 

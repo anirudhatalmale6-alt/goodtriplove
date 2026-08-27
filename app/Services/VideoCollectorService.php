@@ -32,11 +32,15 @@ class VideoCollectorService
      * Runs the due queries, newest-priority first, until the daily budget or
      * the requested number of queries runs out.
      *
-     * @return array{queries: int, created: int, updated: int, units: int, stopped: ?string}
+     * @return array{queries: int, created: int, updated: int, units: int, failed: int, last_error: ?string, stopped: ?string}
      */
     public function runDue(int $maxQueries = 5): array
     {
-        $summary = ['queries' => 0, 'created' => 0, 'updated' => 0, 'units' => 0, 'stopped' => null];
+        // `failed` and `last_error` are reported so a run that imported nothing
+        // because every call errored cannot be mistaken for a run that found
+        // nothing new — both otherwise print "0 new".
+        $summary = ['queries' => 0, 'created' => 0, 'updated' => 0, 'units' => 0,
+            'failed' => 0, 'last_error' => null, 'stopped' => null];
 
         if (! $this->youtube->isConfigured()) {
             $summary['stopped'] = 'no_api_key';
@@ -58,6 +62,11 @@ class VideoCollectorService
             $summary['created'] += $result['created'];
             $summary['updated'] += $result['updated'];
             $summary['units'] += $result['units'];
+
+            if ($result['status'] === 'failed') {
+                $summary['failed']++;
+                $summary['last_error'] = $result['error'] ?? null;
+            }
 
             if ($result['status'] === 'failed' && $result['quota']) {
                 $summary['stopped'] = 'quota';
@@ -148,7 +157,7 @@ class VideoCollectorService
                 'finished_at' => now(),
             ]);
 
-            return ['status' => 'failed', 'created' => $created, 'updated' => $updated, 'units' => $units, 'quota' => true];
+            return ['status' => 'failed', 'created' => $created, 'updated' => $updated, 'units' => $units, 'quota' => true, 'error' => $e->getMessage()];
         } catch (\Throwable $e) {
             Log::error('Collector query failed', ['query' => $query->id, 'error' => $e->getMessage()]);
 
@@ -161,7 +170,7 @@ class VideoCollectorService
 
             $query->update(['last_run_at' => now(), 'runs_count' => $query->runs_count + 1]);
 
-            return ['status' => 'failed', 'created' => $created, 'updated' => $updated, 'units' => $units, 'quota' => false];
+            return ['status' => 'failed', 'created' => $created, 'updated' => $updated, 'units' => $units, 'quota' => false, 'error' => $e->getMessage()];
         }
     }
 

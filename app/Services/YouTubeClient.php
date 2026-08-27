@@ -169,7 +169,10 @@ class YouTubeClient
         // Google answers 403 API_KEY_IP_ADDRESS_BLOCKED. Forcing IPv4 makes the
         // outgoing address match the one the key was restricted to.
         if (config('goodtriplove.youtube.force_ipv4')) {
-            $request->withOptions(['curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]]);
+            // Guzzle rejects a raw CURLOPT_IPRESOLVE in the "curl" option
+            // because it manages the handler itself; force_ip_resolve is the
+            // supported way to ask for the same thing.
+            $request->withOptions(['force_ip_resolve' => 'v4']);
         }
 
         return $request;

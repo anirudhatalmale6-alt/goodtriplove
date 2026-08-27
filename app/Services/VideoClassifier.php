@@ -137,7 +137,14 @@ class VideoClassifier
         // --- pass 2: the local model, only where we are still unsure ----
         // Gated on the CATEGORY score alone: knowing which country we searched
         // says nothing about whether this is a hotel or a beach.
-        if ($categoryConfidence < 0.65 && $this->ollama->enabled()) {
+        //
+        // `allow_model` is false during collection. One inference takes about
+        // 30 seconds, so running it inline turned a 25-result import into a
+        // twelve-minute job and made the collector look hung. The model pass is
+        // a separate batch (gtl:classify) for exactly this reason.
+        $allowModel = $context['allow_model'] ?? true;
+
+        if ($allowModel && $categoryConfidence < 0.65 && $this->ollama->enabled()) {
             $ai = $this->askModel($video);
 
             if ($ai) {

@@ -281,7 +281,7 @@ class VideoCollectorService
             'country_id' => $query?->country_id,
             'city_id' => $query?->city_id,
             'category_id' => $query?->category_id,
-        ]));
+        ]) + ['allow_model' => false]);
 
         $video->relevance_score = $this->relevance($video);
         $this->scorer->score($video);

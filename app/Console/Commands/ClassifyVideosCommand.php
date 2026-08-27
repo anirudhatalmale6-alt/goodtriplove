@@ -16,7 +16,8 @@ class ClassifyVideosCommand extends Command
 {
     protected $signature = 'gtl:classify
         {--limit= : Videos to classify in this run}
-        {--rescan : Re-examine every video, including ones already classified}';
+        {--rescan : Re-examine every video, including ones already classified}
+        {--no-model : Text rules only, even if the local model is available}';
 
     protected $description = 'Classify unresolved videos with the local model';
 
@@ -26,12 +27,18 @@ class ClassifyVideosCommand extends Command
         // Bailing out entirely when it is absent left every video wearing
         // whichever category its search term implied, with nothing to correct
         // it — so run the text rules either way and say which mode we are in.
-        $withModel = $ollama->enabled() && $ollama->isUp();
+        // A full --rescan of a large catalogue with the model on is an
+        // overnight job on a shared box: one inference is ~30s. Sweep with the
+        // text rules, and let the scheduled run work through the uncertain
+        // ones a few at a time.
+        $withModel = ! $this->option('no-model') && $ollama->enabled() && $ollama->isUp();
 
         if (! $withModel) {
-            $this->warn($ollama->enabled()
-                ? 'Ollama is not reachable — running text classification only.'
-                : 'Ollama is disabled — running text classification only.');
+            $this->warn(match (true) {
+                (bool) $this->option('no-model') => 'Model skipped by request — text classification only.',
+                $ollama->enabled() => 'Ollama is not reachable — running text classification only.',
+                default => 'Ollama is disabled — running text classification only.',
+            });
         }
 
         $limit = (int) ($this->option('limit') ?: config('goodtriplove.ollama.max_per_run'));
@@ -69,7 +76,7 @@ class ClassifyVideosCommand extends Command
                 'country_id' => $video->collectorQuery?->country_id,
                 'city_id' => $video->collectorQuery?->city_id,
                 'category_id' => $video->collectorQuery?->category_id,
-            ]));
+            ]) + ['allow_model' => $withModel]);
 
             $video->save();
 

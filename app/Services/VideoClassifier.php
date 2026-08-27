@@ -28,7 +28,16 @@ class VideoClassifier
         $countryId = $context['country_id'] ?? null;
         $cityId = $context['city_id'] ?? null;
         $categoryId = $context['category_id'] ?? null;
-        $confidence = 0.0;
+        // Geography and category are scored SEPARATELY and deliberately.
+        //
+        // They used to share one number, and because the collector query always
+        // supplies a country and usually a city, every imported video started at
+        // 0.65 before its category had been looked at even once. That did two
+        // bad things: it made the "unsure" gate below unreachable, so the local
+        // model never ran on a single collected video; and it reported high
+        // confidence for a category nothing had actually verified.
+        $geoConfidence = 0.0;
+        $categoryConfidence = 0.0;
         $by = 'heuristic';
         $raw = [];
 
@@ -39,10 +48,10 @@ class VideoClassifier
             if ($city) {
                 $cityId = $city->id;
                 $countryId ??= $city->country_id;
-                $confidence += 0.45;
+                $geoConfidence += 0.45;
             }
         } else {
-            $confidence += 0.45;
+            $geoConfidence += 0.45;
         }
 
         if (! $countryId) {
@@ -50,25 +59,41 @@ class VideoClassifier
 
             if ($country) {
                 $countryId = $country->id;
-                $confidence += 0.2;
+                $geoConfidence += 0.2;
             }
         } else {
-            $confidence += 0.2;
+            $geoConfidence += 0.2;
         }
 
         $matchedCategory = $this->matchCategory($haystack);
+        $queryCategoryId = $categoryId;
 
-        if ($matchedCategory) {
-            $categoryId = $categoryId ?: $matchedCategory->id;
-            $confidence += 0.2;
-        } elseif ($categoryId) {
-            $confidence += 0.1;
+        if ($matchedCategory && $queryCategoryId && $matchedCategory->id === $queryCategoryId) {
+            // The video's own words agree with the search that found it.
+            $categoryId = $matchedCategory->id;
+            $categoryConfidence = 0.9;
+        } elseif ($matchedCategory) {
+            // They disagree, or there was no query category. Trust the video's
+            // own title and description: they describe THIS video, whereas the
+            // collector query only describes what we went looking for. A search
+            // for "porto bars" legitimately returns "Top 10 Porto Restaurants",
+            // and filing that under Bars is exactly the error this avoids.
+            $categoryId = $matchedCategory->id;
+            $categoryConfidence = $queryCategoryId ? 0.55 : 0.6;
+        } elseif ($queryCategoryId) {
+            // Nothing in the text confirms it — the search term is the only
+            // evidence, which is weak. Deliberately below the gate so the local
+            // model gets a look at it.
+            $categoryId = $queryCategoryId;
+            $categoryConfidence = 0.35;
         }
 
         $language = $video->language ?: $this->guessLanguage($haystack);
 
         // --- pass 2: the local model, only where we are still unsure ----
-        if ($confidence < 0.65 && $this->ollama->enabled()) {
+        // Gated on the CATEGORY score alone: knowing which country we searched
+        // says nothing about whether this is a hotel or a beach.
+        if ($categoryConfidence < 0.65 && $this->ollama->enabled()) {
             $ai = $this->askModel($video);
 
             if ($ai) {
@@ -81,7 +106,7 @@ class VideoClassifier
                     if ($city) {
                         $cityId = $city->id;
                         $countryId ??= $city->country_id;
-                        $confidence += 0.25;
+                        $geoConfidence += 0.25;
                     }
                 }
 
@@ -90,17 +115,23 @@ class VideoClassifier
 
                     if ($country) {
                         $countryId = $country->id;
-                        $confidence += 0.15;
+                        $geoConfidence += 0.15;
                     }
                 }
 
-                if (! $categoryId && ! empty($ai['category'])) {
+                // The model is only asked when the category was weak, so its
+                // answer is allowed to REPLACE a category we merely inherited
+                // from the search term. Testing `! $categoryId` here would have
+                // been dead code: the fallback above always sets one.
+                if (! empty($ai['category'])) {
                     $category = Category::active()->where('slug', Str::slug($ai['category']))->first()
                         ?? $this->matchCategory(Str::lower($ai['category']));
 
                     if ($category) {
+                        // Agreeing with the weak search-term guess is real
+                        // corroboration from an independent source.
+                        $categoryConfidence = $category->id === $queryCategoryId ? 0.8 : 0.7;
                         $categoryId = $category->id;
-                        $confidence += 0.1;
                     }
                 }
 
@@ -114,9 +145,17 @@ class VideoClassifier
         $video->city_id = $cityId;
         $video->category_id = $categoryId;
         $video->language = $language;
-        $video->classification = $raw ?: null;
         $video->classified_by = $by;
-        $video->classification_confidence = round(min(1.0, $confidence), 4);
+        // This column drives the admin review queue, so it reports how sure we
+        // are about the CATEGORY — the thing a reviewer actually corrects.
+        // Geography is stored alongside it rather than averaged in, so a
+        // well-located video with a guessed category still surfaces for review.
+        $video->classification_confidence = round(min(1.0, $categoryConfidence), 4);
+        $video->classification = array_filter([
+            'raw' => $raw ?: null,
+            'geo_confidence' => round(min(1.0, $geoConfidence), 4),
+            'category_source' => $by,
+        ]) ?: null;
         $video->classified_at = now();
 
         return $video;

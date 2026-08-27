@@ -61,6 +61,9 @@ return [
         'keep_alive' => env('OLLAMA_KEEP_ALIVE', '5m'),
         'lock_seconds' => (int) env('OLLAMA_LOCK_SECONDS', 120),
         'max_per_run' => (int) env('OLLAMA_MAX_PER_RUN', 20),
+        // Category confidence below which a video is re-examined and shown to
+        // the administrator as "needs review".
+        'review_below' => (float) env('GTL_REVIEW_BELOW', 0.65),
     ],
 
     /*

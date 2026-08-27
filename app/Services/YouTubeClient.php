@@ -159,9 +159,20 @@ class YouTubeClient
 
     private function request(): PendingRequest
     {
-        return Http::baseUrl(config('goodtriplove.youtube.base_url'))
+        $request = Http::baseUrl(config('goodtriplove.youtube.base_url'))
             ->timeout(config('goodtriplove.youtube.timeout'))
             ->acceptJson();
+
+        // Google API keys are usually restricted to an IPv4 address, but this
+        // host also has a public IPv6 address and the resolver prefers it — so
+        // the call leaves from an address that is not on the allowlist and
+        // Google answers 403 API_KEY_IP_ADDRESS_BLOCKED. Forcing IPv4 makes the
+        // outgoing address match the one the key was restricted to.
+        if (config('goodtriplove.youtube.force_ipv4')) {
+            $request->withOptions(['curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]]);
+        }
+
+        return $request;
     }
 
     private function errorMessage(?array $body): string

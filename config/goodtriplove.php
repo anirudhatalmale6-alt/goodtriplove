@@ -38,6 +38,9 @@ return [
         ],
         'batch_size' => 50,
         'timeout' => 20,
+        // See YouTubeClient::request(): the key is restricted to this server's
+        // IPv4 address, but the host also has IPv6 and prefers it by default.
+        'force_ipv4' => (bool) env('YOUTUBE_FORCE_IPV4', true),
     ],
 
     /*

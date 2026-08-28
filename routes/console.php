@@ -33,9 +33,15 @@ Schedule::command('gtl:rescore')
     ->withoutOverlapping(60);
 
 // --- Queue (database driver: no Redis, no Supervisor on this server) ---
-Schedule::command('queue:work --stop-when-empty --max-time=280 --tries=3')
-    ->everyFiveMinutes()
-    ->withoutOverlapping(10)
+//
+// A worker is kept alive for the whole minute rather than started every five
+// minutes and stopped as soon as the queue empties. Sign-up codes go through
+// here, and a visitor staring at "check your inbox" will not wait five minutes
+// for the mail to be picked up. --max-time hands the process back each minute,
+// which is also what keeps a leaked worker from living forever.
+Schedule::command('queue:work --max-time=55 --tries=3 --sleep=1 --memory=128')
+    ->everyMinute()
+    ->withoutOverlapping(2)
     ->runInBackground();
 
 // --- Security module ---------------------------------------------------

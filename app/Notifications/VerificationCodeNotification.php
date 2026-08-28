@@ -3,10 +3,19 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class VerificationCodeNotification extends Notification
+/**
+ * Queued on purpose. The mail server on this host holds its SMTP greeting back
+ * for fifteen seconds before it will talk, so sending inline made the visitor
+ * sit on a submitted form for a quarter of a minute — long enough that the
+ * browser looked hung and people pressed the button again. Handing the message
+ * to the queue returns the page immediately; a worker started every minute by
+ * the scheduler does the waiting instead.
+ */
+class VerificationCodeNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 

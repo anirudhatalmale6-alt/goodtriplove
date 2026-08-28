@@ -33,7 +33,13 @@ class EmailVerificationService
             'expires_at' => now()->addMinutes((int) config('security.email_code.ttl_minutes', 10)),
         ]);
 
-        $user->notify(new VerificationCodeNotification($code));
+        // The notification is queued, and the worker runs under the application
+        // default locale — not the one the visitor was browsing in. Pinning the
+        // account's own language here is what stops a Portuguese sign-up from
+        // being answered in French.
+        $user->notify(
+            (new VerificationCodeNotification($code))->locale($user->locale ?: app()->getLocale())
+        );
 
         $this->logger->log('email_code_sent', true, 'info', ['user_id' => $user->id]);
     }

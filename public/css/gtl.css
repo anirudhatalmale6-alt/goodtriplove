@@ -156,6 +156,18 @@ button { font: inherit; }
 }
 .header-search button:hover { color: #fff; }
 
+.header-search__compact {
+  display: none;
+  width: 38px; height: 38px; flex: none;
+  align-items: center; justify-content: center;
+  margin-left: auto;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.header-search__compact:hover { color: #fff; }
+
 .header-tools { display: flex; align-items: center; gap: 8px; margin-left: auto; flex: none; }
 
 .icon-btn {
@@ -527,7 +539,16 @@ button { font: inherit; }
   .nav { gap: 1px; margin-left: 4px; }
   .nav a { padding: 8px 8px; font-size: 13.5px; }
 }
-@media (max-width: 1300px) {
+/* Laptops. There is no longer room for the menu and the search field side by
+   side, so the field folds into an icon that opens the search page. The menu is
+   the more useful of the two here, which is why it is the one that stays. */
+@media (max-width: 1340px) and (min-width: 1041px) {
+  .header-search { display: none; }
+  .header-search__compact { display: flex; }
+  .header-tools { margin-left: 0; }
+}
+
+@media (max-width: 1040px) {
   .nav { display: none; }
   .burger { display: grid; }
   .nav.is-open {

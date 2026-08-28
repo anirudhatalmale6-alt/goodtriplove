@@ -132,6 +132,14 @@
             </button>
         </form>
 
+        {{-- Stands in for the search field on laptop widths, where the menu and
+             the field cannot both fit. Hidden everywhere else (see gtl.css). --}}
+        <a class="header-search__compact" href="{{ route('search') }}" aria-label="{{ __('gtl.search') }}">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+            </svg>
+        </a>
+
         <div class="header-tools">
             <div class="lang">
                 <button class="lang__btn" type="button" aria-haspopup="true">

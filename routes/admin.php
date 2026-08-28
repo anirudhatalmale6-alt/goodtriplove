@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CollectorController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GeographyController;
 use App\Http\Controllers\Admin\PlaceAdminController;
+use App\Http\Controllers\Admin\AuditAdminController;
 use App\Http\Controllers\Admin\SeoAdminController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserAdminController;
@@ -65,6 +66,9 @@ Route::prefix('admin')
         /* Ads manager --------------------------------------------------- */
         // SEO metadata per page and per language. Bound by id like every other
         // admin route: the public site binds models by slug.
+        // Read-only: an audit log an administrator can edit is not an audit log.
+        Route::get('/audit', [AuditAdminController::class, 'index'])->name('audit.index');
+
         Route::get('/seo', [SeoAdminController::class, 'index'])->name('seo.index');
         Route::post('/seo', [SeoAdminController::class, 'store'])->name('seo.store');
         Route::put('/seo/{seo:id}', [SeoAdminController::class, 'update'])->name('seo.update');

@@ -65,11 +65,30 @@ one snapshot scores zero rather than guessing.
   decision cycle and an audit trail.
 
 ### Administration
-Dashboard · videos (moderation, bulk actions, place linking) · places ·
-countries / cities / categories · video collector · ads and scrolling
-announcements · users · settings and app releases · Security Center ·
+Dashboard · videos (moderation, bulk actions, place linking) · **duplicates** ·
+places · countries / cities / categories · video collector · ads and scrolling
+announcements · **professionals** · users and **member records** · **site
+settings** · **SEO** · **action log** · app releases · Security Center ·
 Growth & Ops · data quality · reports · legal texts · service status ·
 YouTube quota · feature flags · error centre.
+
+- **Site settings** — name, tagline, footer text, contact details and social
+  links, editable per language, declared once in `app/Support/SiteSettings.php`
+  so the form, its validation and the rendered page cannot drift apart. An empty
+  translation falls back to the site's own default language.
+- **Member records** — registration date, verification and 2FA status, the
+  places the member submitted, their moderation history and security log.
+  Deleting is a *soft* delete: a business account owns places, so it has to be
+  undoable. Sign-in is refused while an account is deleted.
+- **Duplicates** — the unique index on `(provider, provider_video_id)` cannot
+  see the same clip reposted under a new id. Titles are compared after
+  normalising (hashtags, punctuation and emoji dropped). Resolving a group
+  rejects the extra copies; nothing is deleted.
+- **Announcements** — six languages, display order, start/end dates, and a
+  choice of placement (scrolling bar or footer notice), optionally limited to
+  the home page.
+- **SEO** — title, description, canonical, indexability and structured data per
+  page and per language, overriding what the page itself declares.
 
 ---
 
@@ -110,6 +129,29 @@ target server has neither Redis nor Supervisor.
 | `gtl:admin {email}` | Creates or promotes an administrator |
 | `gtl:demo-content` | Placeholder content for design review |
 
+## Mail on this host
+
+Two settings look wrong and are not:
+
+- `MAIL_MAILER=smtp` to `127.0.0.1:25`, **not** `sendmail`. The web PHP has
+  `proc_open` in `disable_functions`, and the sendmail transport forks a
+  process, so it throws — after the account row has been written. The command
+  line has no such restriction, so a console send reports success while every
+  registration on the site returns a 500. Reproduce over HTTP, never in tinker.
+- `MAIL_AUTO_TLS=false`. The local MTA offers STARTTLS with a certificate
+  issued for its own hostname, so upgrading a connection to `127.0.0.1` fails
+  the name check. The hop never leaves the machine; the MTA still uses TLS for
+  the real delivery. **Any non-loopback host must leave this at its default.**
+
+The verification notification is queued because that MTA holds its SMTP
+greeting for a fixed 15 seconds. The scheduler keeps a worker alive for the
+minute so a code is picked up in seconds rather than at the next five-minute
+tick.
+
+The sign-up email rule is `email:rfc`, deliberately without `dns`: the MX
+lookup cost 15s per submission on this host, and a code the visitor has to read
+out of the mailbox proves more than an MX record does.
+
 ## Why the collector rejects results
 
 YouTube's search is associative, not literal, so a query is a hint rather than a
@@ -134,7 +176,12 @@ titles — good and bad — that shaped it; run it before changing the rules.
 - `YOUTUBE_API_KEY` — without it the collector stays idle.
 - `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` — until set, the captcha check
   is skipped (and logged) rather than locking everyone out.
-- SMTP — required for the 6-digit verification code.
+- **SPF** — the only thing still standing between the site and working sign-up
+  mail. `goodtriplove.com` publishes `v=spf1 include:mx.ovh.com -all`, which
+  authorises OVH's servers and nothing else; this host is not among them, so a
+  code sent to Gmail hard-fails. Either add `ip4:<this server>` to that TXT
+  record, or relay through OVH's submission server with the mailbox password.
+  Delivery to the domain's own mailboxes is already proven.
 - `GTL_LEGAL_*` — publisher, address, registration number, publication
   director, host and DPO. These are factual statements about a real company and
   appear as visible `[[…]]` placeholders in the legal pages until filled in.

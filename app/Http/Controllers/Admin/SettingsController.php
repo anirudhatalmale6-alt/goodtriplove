@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\AppRelease;
 use App\Models\SiteSetting;
 use App\Services\AuditService;
+use App\Support\SiteSettings;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -16,27 +18,82 @@ class SettingsController extends Controller
 
     public function index(): View
     {
+        $locales = array_keys(config('goodtriplove.locales'));
+
+        // The current value per key, and per locale for the translatable ones,
+        // so the form shows what the site is actually rendering right now.
+        $current = [];
+        foreach (SiteSettings::keys() as $key) {
+            if (SiteSettings::isTranslatable($key)) {
+                $stored = SiteSetting::get($key);
+                $stored = is_array($stored) ? $stored : [];
+                foreach ($locales as $locale) {
+                    $current[$key][$locale] = $stored[$locale] ?? '';
+                }
+            } else {
+                $current[$key] = SiteSettings::value($key);
+            }
+        }
+
         return view('admin.settings.index', [
-            'settings' => SiteSetting::orderBy('group')->orderBy('key')->get(),
+            'definitions' => SiteSettings::DEFINITIONS,
+            'current' => $current,
             'releases' => AppRelease::orderByDesc('released_at')->get(),
-            'locales' => array_keys(config('goodtriplove.locales')),
+            'locales' => $locales,
         ]);
     }
 
     public function update(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'settings' => ['required', 'array'],
-            'settings.*' => ['nullable'],
-        ]);
+        $locales = array_keys(config('goodtriplove.locales'));
 
-        foreach ($data['settings'] as $key => $value) {
-            SiteSetting::put($key, $value);
+        // Validated against the same declaration that built the form, so a key
+        // that is not offered cannot be written by hand-crafting a request.
+        $data = $request->validate(SiteSettings::rules($locales));
+
+        $before = [];
+        $after = [];
+
+        foreach (SiteSettings::keys() as $key) {
+            if (! array_key_exists($key, $data['settings'] ?? [])) {
+                continue;
+            }
+
+            $value = $data['settings'][$key];
+
+            if (SiteSettings::isTranslatable($key)) {
+                // Drop empty languages rather than storing blanks: an absent
+                // translation is what triggers the fallback to the default one.
+                $value = array_filter(
+                    Arr::only(is_array($value) ? $value : [], $locales),
+                    fn ($text) => filled($text),
+                );
+            }
+
+            $existing = SiteSetting::get($key);
+            if ($existing !== $value) {
+                $before[$key] = $existing;
+                $after[$key] = $value;
+                SiteSetting::put($key, $value, $this->groupOf($key));
+            }
         }
 
-        $this->audit->record('settings.update', null, [], ['keys' => array_keys($data['settings'])]);
+        if ($after !== []) {
+            $this->audit->record('settings.update', null, $before, $after);
+        }
 
         return back()->with('status', __('gtl.saved'));
+    }
+
+    private function groupOf(string $key): string
+    {
+        foreach (SiteSettings::DEFINITIONS as $group => $definition) {
+            if (isset($definition['items'][$key])) {
+                return $group;
+            }
+        }
+
+        return 'general';
     }
 
     /**

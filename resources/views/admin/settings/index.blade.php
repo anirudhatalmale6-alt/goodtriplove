@@ -44,23 +44,46 @@
 </div>
 @endif
 
-<div class="card mt"><div class="card-body">
-    <h3>Réglages du site</h3>
-    <form method="post" action="{{ route('admin.settings.update') }}">
-        @csrf @method('PUT')
-        @forelse ($settings as $setting)
+<form method="post" action="{{ route('admin.settings.update') }}">
+    @csrf @method('PUT')
+
+    @foreach ($definitions as $groupKey => $group)
+    <div class="card mt"><div class="card-body">
+        <h3>{{ $group['label'] }}</h3>
+
+        @foreach ($group['items'] as $key => $definition)
             <div class="field">
-                <label>{{ $setting->key }}</label>
-                <input name="settings[{{ $setting->key }}]" value="{{ is_scalar($setting->value) ? $setting->value : json_encode($setting->value) }}">
+                <label>{{ $definition['label'] ?? $key }}</label>
+
+                @if ($definition['translatable'] ?? false)
+                    <p class="muted small">Une valeur par langue. Une langue laissée vide reprend le français.</p>
+                    @foreach ($locales as $locale)
+                        <div class="field-inline">
+                            <span class="badge">{{ strtoupper($locale) }}</span>
+                            @if ($definition['type'] === 'textarea')
+                                <textarea name="settings[{{ $key }}][{{ $locale }}]" rows="2">{{ $current[$key][$locale] ?? '' }}</textarea>
+                            @else
+                                <input name="settings[{{ $key }}][{{ $locale }}]" value="{{ $current[$key][$locale] ?? '' }}">
+                            @endif
+                        </div>
+                    @endforeach
+                @elseif ($definition['type'] === 'textarea')
+                    <textarea name="settings[{{ $key }}]" rows="2">{{ $current[$key] }}</textarea>
+                @else
+                    <input type="{{ $definition['type'] === 'bool' ? 'text' : $definition['type'] }}"
+                           name="settings[{{ $key }}]" value="{{ $current[$key] }}">
+                @endif
             </div>
-        @empty
-            <p class="muted small">Aucun réglage enregistré pour l'instant.</p>
-        @endforelse
-        <div class="field">
-            <label>Contact affiché sur le site</label>
-            <input name="settings[contact_email]" value="{{ \App\Models\SiteSetting::get('contact_email') }}">
-        </div>
-        <button class="btn btn-primary" type="submit">Enregistrer</button>
-    </form>
-</div></div>
+        @endforeach
+    </div></div>
+    @endforeach
+
+    <div class="card mt"><div class="card-body">
+        <button class="btn btn-primary" type="submit">Enregistrer les réglages</button>
+        <p class="muted small" style="margin-top:8px">
+            Ces valeurs sont affichées sur le site public (pied de page, coordonnées, réseaux sociaux).
+            Une valeur laissée vide n'affiche rien plutôt qu'un espace vide.
+        </p>
+    </div></div>
+</form>
 @endsection

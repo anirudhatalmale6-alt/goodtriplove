@@ -213,7 +213,31 @@
                     </svg>
                     <span>Good<span class="logo__b">Trip</span>Love</span>
                 </a>
-                <p style="margin-top:12px;max-width:34ch">{{ __('gtl.footer_pitch') }}</p>
+                {{-- Editable from the admin; falls back to the translation
+                     file until an administrator saves something. --}}
+                <p style="margin-top:12px;max-width:34ch">{{ ($site['footer_pitch'] ?? '') ?: __('gtl.footer_pitch') }}</p>
+
+                @if (! empty($siteSocial ?? []))
+                    <div class="footer-social">
+                        @foreach ($siteSocial ?? [] as $link)
+                            <a href="{{ $link['url'] }}" rel="noopener noreferrer" target="_blank">{{ $link['label'] }}</a>
+                        @endforeach
+                    </div>
+                @endif
+
+                @if (($site['contact_email'] ?? '') || ($site['contact_phone'] ?? '') || ($site['contact_address'] ?? ''))
+                    <div class="footer-contact">
+                        @if ($site['contact_email'] ?? '')
+                            <a href="mailto:{{ $site['contact_email'] }}">{{ $site['contact_email'] }}</a>
+                        @endif
+                        @if ($site['contact_phone'] ?? '')
+                            <a href="tel:{{ preg_replace('/[^0-9+]/', '', $site['contact_phone']) }}">{{ $site['contact_phone'] }}</a>
+                        @endif
+                        @if ($site['contact_address'] ?? '')
+                            <span>{{ $site['contact_address'] }}</span>
+                        @endif
+                    </div>
+                @endif
             </div>
             <div>
                 <h4>{{ __('gtl.nav_categories') }}</h4>
@@ -239,7 +263,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <span>© {{ date('Y') }} GoodTripLove — {{ __('gtl.footer_rights') }}</span>
+            <span>© {{ date('Y') }} {{ $site['site_name'] ?? 'GoodTripLove' }} — {{ __('gtl.footer_rights') }}</span>
             <span>{{ __('gtl.footer_embed_notice') }}</span>
         </div>
     </div>

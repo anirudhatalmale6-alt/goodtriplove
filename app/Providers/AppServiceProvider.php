@@ -6,6 +6,7 @@ use App\Contracts\TotpVerifier;
 use App\Support\Google2FaVerifier;
 use Illuminate\Pagination\Paginator;
 use App\View\Composers\SeoComposer;
+use App\View\Composers\SiteComposer;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -31,5 +32,9 @@ class AppServiceProvider extends ServiceProvider
         // Without this the SEO overrides an administrator saves are never read
         // by any page. See SeoComposer.
         View::composer('layouts.app', SeoComposer::class);
+
+        // Same reasoning for the editable site settings: the admin form is only
+        // worth having if the values reach the page. See SiteComposer.
+        View::composer('layouts.app', SiteComposer::class);
     }
 }

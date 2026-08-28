@@ -33,7 +33,17 @@ class RegisterController extends Controller
     ): RedirectResponse {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email:rfc,dns', 'max:190', 'unique:users,email'],
+            // `dns` was in this rule and cost fifteen seconds per submission:
+            // it resolves the MX record, and the web PHP on this host cannot
+            // reach a resolver, so every registration sat waiting for the
+            // lookup to time out. The command line resolves normally, which is
+            // why this never showed up in a console test.
+            //
+            // Dropping it loses nothing. A domain with an MX record is a much
+            // weaker claim than the one we already make the visitor prove:
+            // they have to read a code out of that mailbox before the account
+            // is worth anything.
+            'email' => ['required', 'email:rfc', 'max:190', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::min(10)->letters()->numbers()],
             'account_type' => ['required', 'in:user,business'],
             'terms' => ['accepted'],

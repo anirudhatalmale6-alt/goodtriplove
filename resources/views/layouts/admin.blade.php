@@ -27,6 +27,7 @@
         <a class="nav-link {{ request()->is('admin/videos*') ? 'is-active' : '' }}" href="{{ route('admin.videos.index') }}">
             Vidéos @if ($pendingVideos) <span class="pill">{{ $pendingVideos }}</span> @endif
         </a>
+        <a class="nav-link {{ request()->is('admin/videos/duplicates') ? 'is-active' : '' }}" href="{{ route('admin.videos.duplicates') }}">Doublons</a>
         <a class="nav-link {{ request()->is('admin/places*') ? 'is-active' : '' }}" href="{{ route('admin.places.index') }}">
             Lieux @if ($pendingPlaces) <span class="pill">{{ $pendingPlaces }}</span> @endif
         </a>

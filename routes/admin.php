@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdsController;
 use App\Http\Controllers\Admin\CollectorController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DuplicateAdminController;
 use App\Http\Controllers\Admin\GeographyController;
 use App\Http\Controllers\Admin\PlaceAdminController;
 use App\Http\Controllers\Admin\AuditAdminController;
@@ -25,6 +26,9 @@ Route::prefix('admin')
 
         /* Videos ------------------------------------------------------- */
         Route::get('/videos', [VideoAdminController::class, 'index'])->name('videos.index');
+        // Before /videos/{video}, or "duplicates" would be read as an id.
+        Route::get('/videos/duplicates', [DuplicateAdminController::class, 'index'])->name('videos.duplicates');
+        Route::post('/videos/duplicates', [DuplicateAdminController::class, 'resolve'])->name('videos.duplicates.resolve');
         Route::post('/videos/bulk', [VideoAdminController::class, 'bulk'])->name('videos.bulk');
         Route::get('/videos/{video:id}/edit', [VideoAdminController::class, 'edit'])->name('videos.edit');
         Route::put('/videos/{video:id}', [VideoAdminController::class, 'update'])->name('videos.update');

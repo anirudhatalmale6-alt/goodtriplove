@@ -121,6 +121,7 @@ return [
     'resend_code' => 'Code erneut senden',
     'email_verified' => 'E-Mail-Adresse bestätigt. Willkommen!',
     'code_resent' => 'Ein neuer Code wurde gesendet.',
+    'verification_send_failed' => 'Ihr Konto wurde erstellt, der Code konnte jedoch nicht gesendet werden. Bitte nutzen Sie gleich „Code erneut senden“.',
     'code_missing' => 'Kein Code vorhanden. Bitte einen neuen anfordern.',
     'code_expired' => 'Dieser Code ist abgelaufen. Bitte einen neuen anfordern.',
     'code_invalid' => 'Falscher Code.',

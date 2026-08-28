@@ -130,6 +130,7 @@ return [
     'resend_code' => 'Renvoyer le code',
     'email_verified' => 'Adresse e-mail vérifiée. Bienvenue !',
     'code_resent' => 'Un nouveau code vient d’être envoyé.',
+    'verification_send_failed' => 'Votre compte a bien été créé, mais l’envoi du code a échoué. Cliquez sur « Renvoyer le code » dans un instant.',
     'code_missing' => 'Aucun code en cours. Demandez-en un nouveau.',
     'code_expired' => 'Ce code a expiré. Demandez-en un nouveau.',
     'code_invalid' => 'Code incorrect.',

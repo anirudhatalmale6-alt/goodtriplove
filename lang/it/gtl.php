@@ -121,6 +121,7 @@ return [
     'resend_code' => 'Invia di nuovo il codice',
     'email_verified' => 'Indirizzo e-mail verificato. Benvenuto!',
     'code_resent' => 'Un nuovo codice è stato inviato.',
+    'verification_send_failed' => 'Il tuo account è stato creato, ma non è stato possibile inviare il codice. Usa “Invia di nuovo il codice” tra poco.',
     'code_missing' => 'Nessun codice in corso. Ne richieda uno nuovo.',
     'code_expired' => 'Questo codice è scaduto. Ne richieda uno nuovo.',
     'code_invalid' => 'Codice errato.',

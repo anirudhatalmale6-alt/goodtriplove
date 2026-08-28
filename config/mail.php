@@ -47,6 +47,23 @@ return [
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+
+            // Both of these are forwarded to Symfony's EsmtpTransportFactory as
+            // DSN options.
+            //
+            // We hand the mail to the MTA running on this same machine over the
+            // loopback interface. That MTA advertises STARTTLS with a
+            // certificate issued for its own hostname, so a TLS upgrade to
+            // 127.0.0.1 fails the name check and the send dies with
+            // "Unable to connect with STARTTLS". Encrypting a connection that
+            // never leaves the host buys nothing, so the upgrade is turned off
+            // for the local relay — the MTA still uses TLS for the real hop out
+            // to Gmail and the rest.
+            //
+            // Anything other than a loopback host must leave these at their
+            // defaults, or the credentials would cross the network in clear.
+            'auto_tls' => filter_var(env('MAIL_AUTO_TLS', true), FILTER_VALIDATE_BOOL),
+            'verify_peer' => filter_var(env('MAIL_VERIFY_PEER', true), FILTER_VALIDATE_BOOL),
         ],
 
         'ses' => [

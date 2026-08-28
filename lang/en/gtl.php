@@ -121,6 +121,7 @@ return [
     'resend_code' => 'Resend the code',
     'email_verified' => 'Email address verified. Welcome!',
     'code_resent' => 'A new code has been sent.',
+    'verification_send_failed' => 'Your account was created, but the code could not be sent. Please use “Resend code” in a moment.',
     'code_missing' => 'No code pending. Request a new one.',
     'code_expired' => 'This code has expired. Request a new one.',
     'code_invalid' => 'Incorrect code.',

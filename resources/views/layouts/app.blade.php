@@ -11,9 +11,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-<title>@yield('title', __('gtl.meta_default_title'))</title>
-<meta name="description" content="@yield('description', __('gtl.meta_default_description'))">
-<link rel="canonical" href="@yield('canonical', url()->current())">
+@php
+    // An administrator's override wins over the page's own @section; the page
+    // wins over the site default. $seo comes from SeoComposer.
+    $seo = $seo ?? ['title' => null, 'description' => null, 'canonical_url' => null,
+                    'indexable' => true, 'structured_data' => null];
+    $seoTitle = $seo['title'] ?: trim($__env->yieldContent('title', __('gtl.meta_default_title')));
+    $seoDescription = $seo['description'] ?: trim($__env->yieldContent('description', __('gtl.meta_default_description')));
+    $seoCanonical = $seo['canonical_url'] ?: trim($__env->yieldContent('canonical', url()->current()));
+@endphp
+
+<title>{{ $seoTitle }}</title>
+<meta name="description" content="{{ $seoDescription }}">
+<link rel="canonical" href="{{ $seoCanonical }}">
+@unless ($seo['indexable'])
+    {{-- Set from the admin: keep this page out of the search results. --}}
+    <meta name="robots" content="noindex,nofollow">
+@endunless
+@if (!empty($seo['structured_data']))
+    <script type="application/ld+json">{!! json_encode($seo['structured_data'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+@endif
 
 {{-- Six languages, declared as alternates rather than duplicates. --}}
 @hasSection('hreflang')
@@ -30,8 +47,8 @@
 {{-- og:title is the only title social platforms read. --}}
 <meta property="og:site_name" content="GoodTripLove">
 <meta property="og:type" content="@yield('og_type', 'website')">
-<meta property="og:title" content="@yield('og_title', trim($__env->yieldContent('title', __('gtl.meta_default_title'))))">
-<meta property="og:description" content="@yield('og_description', trim($__env->yieldContent('description', __('gtl.meta_default_description'))))">
+<meta property="og:title" content="@yield('og_title', $seoTitle)">
+<meta property="og:description" content="@yield('og_description', $seoDescription)">
 <meta property="og:url" content="{{ url()->current() }}">
 <meta property="og:locale" content="{{ $current }}">
 @hasSection('og_image')

@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CollectorController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GeographyController;
 use App\Http\Controllers\Admin\PlaceAdminController;
+use App\Http\Controllers\Admin\SeoAdminController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Admin\VideoAdminController;
@@ -62,6 +63,13 @@ Route::prefix('admin')
         Route::post('/collector/{query:id}/run', [CollectorController::class, 'run'])->name('collector.run');
 
         /* Ads manager --------------------------------------------------- */
+        // SEO metadata per page and per language. Bound by id like every other
+        // admin route: the public site binds models by slug.
+        Route::get('/seo', [SeoAdminController::class, 'index'])->name('seo.index');
+        Route::post('/seo', [SeoAdminController::class, 'store'])->name('seo.store');
+        Route::put('/seo/{seo:id}', [SeoAdminController::class, 'update'])->name('seo.update');
+        Route::delete('/seo/{seo:id}', [SeoAdminController::class, 'destroy'])->name('seo.destroy');
+
         Route::get('/ads', [AdsController::class, 'index'])->name('ads.index');
         Route::post('/ads', [AdsController::class, 'store'])->name('ads.store');
         Route::put('/ads/{ad:id}', [AdsController::class, 'update'])->name('ads.update');

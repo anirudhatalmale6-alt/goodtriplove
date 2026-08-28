@@ -5,7 +5,9 @@ namespace App\Providers;
 use App\Contracts\TotpVerifier;
 use App\Support\Google2FaVerifier;
 use Illuminate\Pagination\Paginator;
+use App\View\Composers\SeoComposer;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,5 +27,9 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
+
+        // Without this the SEO overrides an administrator saves are never read
+        // by any page. See SeoComposer.
+        View::composer('layouts.app', SeoComposer::class);
     }
 }

@@ -73,7 +73,20 @@ class VideoAdminController extends Controller
         $video->fill($data + [
             'is_featured' => $request->boolean('is_featured'),
             'is_tv_eligible' => $request->boolean('is_tv_eligible'),
-        ])->save();
+        ]);
+
+        // A human decided where this video belongs, so stop the classifier
+        // touching it. Without this the row still read `classified_by =
+        // heuristic`, and the hourly gtl:classify picked it straight back up
+        // and reinstated exactly the mistake the administrator had just
+        // corrected.
+        if (array_intersect(['country_id', 'city_id', 'category_id', 'subcategory_id'], array_keys($video->getDirty()))) {
+            $video->classified_by = 'admin';
+            $video->classification_confidence = 1.0;
+            $video->classified_at = now();
+        }
+
+        $video->save();
 
         $this->audit->record('video.update', $video, $old, $video->only(array_keys($data)));
 

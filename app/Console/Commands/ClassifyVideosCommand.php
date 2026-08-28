@@ -49,6 +49,10 @@ class ClassifyVideosCommand extends Command
         $weak = (float) config('goodtriplove.ollama.review_below', 0.65);
 
         $videos = Video::query()
+            // Never re-classify what an administrator has corrected by hand —
+            // not even on --rescan. A human decision outranks every automatic
+            // one, and silently reversing it is worse than leaving a gap.
+            ->where(fn ($w) => $w->whereNull('classified_by')->orWhere('classified_by', '!=', 'admin'))
             ->unless($this->option('rescan'), fn ($q) => $q
                 ->where(fn ($w) => $w->whereNull('city_id')
                     ->orWhereNull('category_id')

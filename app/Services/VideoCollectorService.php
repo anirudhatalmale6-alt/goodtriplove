@@ -287,11 +287,17 @@ class VideoCollectorService
             $video->status = Video::STATUS_PENDING;
         }
 
-        $this->classifier->classify($video, array_filter([
-            'country_id' => $query?->country_id,
-            'city_id' => $query?->city_id,
-            'category_id' => $query?->category_id,
-        ]) + ['allow_model' => false]);
+        // Refreshing an existing video must never undo a human correction.
+        // importItem() runs on every refresh pass too, so without this guard the
+        // collector quietly reinstated its own guess a few hours after the
+        // administrator had fixed it.
+        if ($video->classified_by !== 'admin') {
+            $this->classifier->classify($video, array_filter([
+                'country_id' => $query?->country_id,
+                'city_id' => $query?->city_id,
+                'category_id' => $query?->category_id,
+            ]) + ['allow_model' => false]);
+        }
 
         $video->relevance_score = $this->relevance($video);
         $this->scorer->score($video);

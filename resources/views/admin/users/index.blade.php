@@ -13,12 +13,18 @@
         </select>
     </div>
     <div class="field"><label>Recherche</label><input type="search" name="q" value="{{ request('q') }}"></div>
+    <div class="field"><label>Comptes supprimés</label>
+        <select name="deleted" onchange="this.form.submit()">
+            <option value="">Masqués</option>
+            <option value="1" @selected(request('deleted') === '1')>Afficher ({{ $trashedCount }})</option>
+        </select>
+    </div>
     <button class="btn btn-primary" type="submit">Filtrer</button>
 </form>
 
 <div class="table-wrap">
 <table class="table">
-    <thead><tr><th>Nom</th><th>E-mail</th><th>Rôle</th><th>Lieux</th><th>Vérifié</th><th>2FA</th><th>Dernière connexion</th><th>Actif</th><th></th></tr></thead>
+    <thead><tr><th>Nom</th><th>E-mail</th><th>Rôle</th><th>Lieux</th><th>Vérifié</th><th>2FA</th><th>Inscrit</th><th>Dernière connexion</th><th>Actif</th><th></th><th></th></tr></thead>
     <tbody>
     @foreach ($users as $user)
         <tr>
@@ -36,9 +42,11 @@
                 <td>{{ $user->places_count }}</td>
                 <td>{!! $user->email_verified_at ? '<span class="badge badge-success">oui</span>' : '<span class="badge badge-warning">non</span>' !!}</td>
                 <td>{!! $user->two_factor_enabled ? '<span class="badge badge-success">on</span>' : '<span class="badge">off</span>' !!}</td>
+                <td class="muted small nowrap">{{ $user->created_at?->format('d/m/y') }}</td>
                 <td class="muted small nowrap">{{ $user->last_login_at?->format('d/m/y H:i') ?? '—' }}</td>
                 <td><input type="checkbox" name="is_active" value="1" @checked($user->is_active) style="width:auto"></td>
                 <td><button class="btn btn-sm btn-primary" type="submit" @disabled(auth()->user()->role !== 'super_admin' || $user->id === auth()->id())>OK</button></td>
+                <td><a href="{{ route('admin.users.show', $user->id) }}">fiche</a></td>
             </form>
         </tr>
     @endforeach

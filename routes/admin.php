@@ -84,7 +84,12 @@ Route::prefix('admin')
 
         /* Users and settings -------------------------------------------- */
         Route::get('/users', [UserAdminController::class, 'index'])->name('users.index');
+        // Bound by id rather than by model so a suspended (soft-deleted)
+        // account can still be opened and restored.
+        Route::get('/users/{id}', [UserAdminController::class, 'show'])->name('users.show');
         Route::put('/users/{user:id}', [UserAdminController::class, 'update'])->name('users.update');
+        Route::delete('/users/{id}', [UserAdminController::class, 'destroy'])->name('users.destroy');
+        Route::post('/users/{id}/restore', [UserAdminController::class, 'restore'])->name('users.restore');
 
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
         Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');

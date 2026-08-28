@@ -12,11 +12,20 @@ class Announcement extends Model
 
     protected $guarded = [];
 
+    public const PLACEMENT_TICKER = 'ticker';
+    public const PLACEMENT_FOOTER = 'footer';
+
+    public const PLACEMENTS = [
+        self::PLACEMENT_TICKER => 'Bandeau défilant (haut de page)',
+        self::PLACEMENT_FOOTER => 'Bandeau en pied de page',
+    ];
+
     protected function casts(): array
     {
         return [
             'text' => 'array',
             'is_active' => 'boolean',
+            'home_only' => 'boolean',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
         ];

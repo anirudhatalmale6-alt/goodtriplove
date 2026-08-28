@@ -2,7 +2,9 @@
     $locales = config('goodtriplove.locales');
     $current = app()->getLocale();
     $assetVersion = @filemtime(public_path('css/gtl.css')) ?: 1;
-    $ticker = app(\App\Services\AdService::class)->ticker();
+    $ads = app(\App\Services\AdService::class);
+    $ticker = $ads->ticker();
+    $footerNotices = $ads->announcements(\App\Models\Announcement::PLACEMENT_FOOTER);
 @endphp
 <!doctype html>
 <html lang="{{ $current }}">
@@ -205,6 +207,21 @@
 
 <footer class="site-footer">
     <div class="wrap">
+        @if (! empty($footerNotices))
+            <div class="footer-notices">
+                @foreach ($footerNotices as $notice)
+                    <div class="footer-notice">
+                        @if ($notice['emoji']) <span aria-hidden="true">{{ $notice['emoji'] }}</span> @endif
+                        @if ($notice['url'])
+                            <a href="{{ $notice['url'] }}">{{ $notice['text'] }}</a>
+                        @else
+                            {{ $notice['text'] }}
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
         <div class="footer-grid">
             <div>
                 <a class="logo" href="{{ route('home') }}">

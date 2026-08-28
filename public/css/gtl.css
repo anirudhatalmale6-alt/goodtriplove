@@ -491,6 +491,13 @@ button { font: inherit; }
 .alert--err { background: rgba(255, 51, 85, .12); border: 1px solid rgba(255, 51, 85, .38); color: #ff9db0; }
 .alert--warn { background: rgba(245, 158, 11, .12); border: 1px solid rgba(245, 158, 11, .38); color: #fcd34d; }
 
+.footer-notices { display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px; }
+.footer-notice {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 14px; font-size: 14px;
+}
+.field-inline { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+
 .footer-social { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
 .footer-social a { font-weight: 600; }
 .footer-contact { display: flex; flex-direction: column; gap: 4px; margin-top: 14px; font-size: 13.5px; }

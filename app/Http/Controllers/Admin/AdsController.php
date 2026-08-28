@@ -74,31 +74,46 @@ class AdsController extends Controller
 
     public function storeAnnouncement(Request $request): RedirectResponse
     {
-        Announcement::create($request->validate([
+        $data = $request->validate([
             'text' => ['required', 'array'],
             'text.*' => ['nullable', 'string', 'max:250'],
             'url' => ['nullable', 'url', 'max:255'],
             'emoji' => ['nullable', 'string', 'max:16'],
+            'placement' => ['required', 'in:ticker,footer'],
             'starts_at' => ['nullable', 'date'],
             'ends_at' => ['nullable', 'date', 'after:starts_at'],
             'sort_order' => ['nullable', 'integer'],
-        ]) + ['is_active' => true]);
+        ]);
+
+        Announcement::create($data + [
+            'is_active' => true,
+            'home_only' => $request->boolean('home_only'),
+        ]);
 
         return back()->with('status', __('gtl.saved'));
     }
 
     public function updateAnnouncement(Request $request, Announcement $announcement): RedirectResponse
     {
-        $announcement->update($request->validate([
+        $data = $request->validate([
             'text' => ['required', 'array'],
             'text.*' => ['nullable', 'string', 'max:250'],
             'url' => ['nullable', 'url', 'max:255'],
             'emoji' => ['nullable', 'string', 'max:16'],
+            'placement' => ['required', 'in:ticker,footer'],
             'starts_at' => ['nullable', 'date'],
             'ends_at' => ['nullable', 'date', 'after:starts_at'],
             'sort_order' => ['nullable', 'integer'],
-            'is_active' => ['nullable', 'boolean'],
-        ]));
+        ]);
+
+        // An unticked checkbox posts nothing at all, so taking is_active from
+        // the validated data meant an announcement could be switched on and
+        // never off: the form said "enregistre" and the banner kept scrolling.
+        // Reading the request directly is what makes the toggle work both ways.
+        $announcement->update($data + [
+            'is_active' => $request->boolean('is_active'),
+            'home_only' => $request->boolean('home_only'),
+        ]);
 
         return back()->with('status', __('gtl.saved'));
     }

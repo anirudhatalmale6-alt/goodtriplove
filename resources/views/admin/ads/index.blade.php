@@ -79,7 +79,19 @@
         <div class="grid-3">
             <div class="field"><label>Emoji</label><input name="emoji" maxlength="16"></div>
             <div class="field"><label>Lien</label><input name="url" type="url"></div>
-            <div class="field"><label>Ordre</label><input name="sort_order" type="number" value="0"></div>
+            <div class="field"><label>Ordre d'affichage</label><input name="sort_order" type="number" value="0"></div>
+        </div>
+        <div class="grid-2">
+            <div class="field"><label>Emplacement</label>
+                <select name="placement">
+                    @foreach (\App\Models\Announcement::PLACEMENTS as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="field"><label>Page d'accueil uniquement</label>
+                <input type="checkbox" name="home_only" value="1" style="width:auto">
+            </div>
         </div>
         <div class="grid-2">
             <div class="field"><label>Début</label><input name="starts_at" type="datetime-local"></div>
@@ -91,18 +103,33 @@
 
 <div class="table-wrap">
 <table class="table">
-    <thead><tr><th>Texte (FR)</th><th>Période</th><th>Active</th><th></th></tr></thead>
+    <thead><tr><th>Textes par langue</th><th>Emplacement</th><th>Ordre</th><th>Période</th><th>Active</th><th></th><th></th></tr></thead>
     <tbody>
     @forelse ($announcements as $announcement)
         <tr>
             <form method="post" action="{{ route('admin.announcements.update', $announcement) }}">
                 @csrf @method('PUT')
                 <td>
-                    <input name="text[fr]" value="{{ data_get($announcement->text, 'fr') }}" style="width:100%">
-                    @foreach (['pt', 'es', 'it', 'de', 'en'] as $locale)
-                        <input type="hidden" name="text[{{ $locale }}]" value="{{ data_get($announcement->text, $locale) }}">
+                    @foreach (['fr', 'pt', 'es', 'it', 'de', 'en'] as $locale)
+                        <div class="field-inline">
+                            <span class="badge">{{ strtoupper($locale) }}</span>
+                            <input name="text[{{ $locale }}]" maxlength="250"
+                                   value="{{ data_get($announcement->text, $locale) }}" style="width:100%">
+                        </div>
                     @endforeach
                 </td>
+                <td>
+                    <select name="placement" style="width:150px">
+                        @foreach (\App\Models\Announcement::PLACEMENTS as $value => $label)
+                            <option value="{{ $value }}" @selected($announcement->placement === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <label class="muted small" style="display:block;margin-top:6px">
+                        <input type="checkbox" name="home_only" value="1" @checked($announcement->home_only) style="width:auto">
+                        accueil seulement
+                    </label>
+                </td>
+                <td><input name="sort_order" type="number" value="{{ $announcement->sort_order }}" style="width:70px"></td>
                 <td class="muted small nowrap">{{ $announcement->starts_at?->format('d/m/y') ?? '—' }} → {{ $announcement->ends_at?->format('d/m/y') ?? '—' }}</td>
                 <td><input type="checkbox" name="is_active" value="1" @checked($announcement->is_active) style="width:auto"></td>
                 <td class="nowrap"><button class="btn btn-sm btn-primary" type="submit">OK</button></td>
@@ -114,7 +141,7 @@
             </td>
         </tr>
     @empty
-        <tr><td colspan="5" class="muted">Aucune annonce.</td></tr>
+        <tr><td colspan="7" class="muted">Aucune annonce.</td></tr>
     @endforelse
     </tbody>
 </table>

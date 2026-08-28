@@ -48,8 +48,23 @@ class AdService
      */
     public function ticker(): array
     {
+        return $this->announcements(Announcement::PLACEMENT_TICKER);
+    }
+
+    /**
+     * Live announcements for one position, in the order the admin set.
+     *
+     * `home_only` rows are dropped everywhere except the home page, which is
+     * what makes a seasonal banner possible without it following the visitor
+     * onto every video page.
+     */
+    public function announcements(string $placement): array
+    {
         return Announcement::live()
+            ->where('placement', $placement)
+            ->when(! request()->routeIs('home'), fn ($q) => $q->where('home_only', false))
             ->orderBy('sort_order')
+            ->orderBy('id')
             ->get()
             ->map(fn (Announcement $a) => [
                 'text' => $a->body(),

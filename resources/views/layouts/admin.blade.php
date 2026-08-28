@@ -56,6 +56,7 @@
         <a class="nav-link {{ request()->is('admin/operations/errors*') ? 'is-active' : '' }}" href="{{ route('admin.operations.errors') }}">Centre d'erreurs</a>
 
         <div class="sidebar__group">Système</div>
+        <a class="nav-link {{ request()->is('admin/businesses*') ? 'is-active' : '' }}" href="{{ route('admin.businesses.index') }}">Professionnels</a>
         <a class="nav-link {{ request()->is('admin/users*') ? 'is-active' : '' }}" href="{{ route('admin.users.index') }}">Utilisateurs</a>
         <a class="nav-link {{ request()->is('admin/security-center*') ? 'is-active' : '' }}" href="{{ route('admin.security-center') }}">Security Center</a>
         <a class="nav-link {{ request()->is('admin/audit*') ? 'is-active' : '' }}" href="{{ route('admin.audit.index') }}">Journal des actions</a>

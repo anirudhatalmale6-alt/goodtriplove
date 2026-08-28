@@ -39,6 +39,8 @@ class AdminScreensTest extends TestCase
             'audit log' => ['admin.audit.index'],
             'videos' => ['admin.videos.index'],
             'users' => ['admin.users.index'],
+            'businesses' => ['admin.businesses.index'],
+            'duplicates' => ['admin.videos.duplicates'],
             'ads' => ['admin.ads.index'],
             'settings' => ['admin.settings.index'],
         ];

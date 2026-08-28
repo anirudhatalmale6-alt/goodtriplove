@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdsController;
+use App\Http\Controllers\Admin\BusinessAdminController;
 use App\Http\Controllers\Admin\CollectorController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DuplicateAdminController;
@@ -87,6 +88,8 @@ Route::prefix('admin')
         Route::delete('/announcements/{announcement:id}', [AdsController::class, 'destroyAnnouncement'])->name('announcements.destroy');
 
         /* Users and settings -------------------------------------------- */
+        Route::get('/businesses', [BusinessAdminController::class, 'index'])->name('businesses.index');
+
         Route::get('/users', [UserAdminController::class, 'index'])->name('users.index');
         // Bound by id rather than by model so a suspended (soft-deleted)
         // account can still be opened and restored.

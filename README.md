@@ -89,6 +89,15 @@ YouTube quota · feature flags · error centre.
   the home page.
 - **SEO** — title, description, canonical, indexability and structured data per
   page and per language, overriding what the page itself declares.
+- **Keys & security** — 2FA on/off, Turnstile on/off with both keys, the
+  YouTube API key and the SMTP settings, declared in
+  `app/Support/SystemSettings.php`. Each declaration names the configuration
+  entry it overrides; `SystemSettings::apply()` pushes the saved values into
+  the live config at boot, so `TurnstileService`, `YouTubeClient` and the
+  mailer are unchanged and simply get a different answer from `config()`. A
+  setting that was never saved leaves the `.env` value alone. Secrets are
+  encrypted at rest and never re-rendered. Each section can be **tested**
+  against the real service, because a saved key proves nothing on its own.
 
 ---
 
@@ -176,12 +185,24 @@ titles — good and bad — that shaped it; run it before changing the rules.
 - `YOUTUBE_API_KEY` — without it the collector stays idle.
 - `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` — until set, the captcha check
   is skipped (and logged) rather than locking everyone out.
-- **SPF** — the only thing still standing between the site and working sign-up
-  mail. `goodtriplove.com` publishes `v=spf1 include:mx.ovh.com -all`, which
-  authorises OVH's servers and nothing else; this host is not among them, so a
-  code sent to Gmail hard-fails. Either add `ip4:<this server>` to that TXT
-  record, or relay through OVH's submission server with the mailbox password.
-  Delivery to the domain's own mailboxes is already proven.
+- **Outbound mail** — set from **Admin → Clés & sécurité**, no `.env` edit.
+  Local delivery works; nothing reaches an external address yet, and there are
+  three separate reasons, so fixing only one changes nothing:
+  1. The local MTA answers `550 relay not permitted` to any external recipient
+     from an unauthenticated client.
+  2. Outbound port 25 is refused to every external MX — Gmail's and OVH's
+     alike — while port 443 connects in 5 ms. That is provider-level filtering.
+  3. SPF is `v=spf1 include:mx.ovh.com -all`, which expands to two /32s plus
+     two `ptr:` mechanisms. This host is in neither, and its PTR is
+     `vps-…​.vps.ovh.net`, so the `ptr:` rules do not match either.
+
+  Relaying through `ssl0.ovh.net:587` with a real OVH mailbox settles all
+  three at once — authentication makes relaying legitimate, 587 is open, and
+  the mail then leaves from servers the published SPF already authorises. **No
+  DNS change is needed**, which matters because the DirectAdmin DNS zone for
+  this domain is not the published one: the registry delegates
+  `goodtriplove.com` to OVH's nameservers, so the zone editable in DirectAdmin
+  is complete, correct and entirely unread.
 - `GTL_LEGAL_*` — publisher, address, registration number, publication
   director, host and DPO. These are factual statements about a real company and
   appear as visible `[[…]]` placeholders in the legal pages until filled in.

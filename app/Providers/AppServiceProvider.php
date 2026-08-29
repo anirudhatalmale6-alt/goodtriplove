@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Contracts\TotpVerifier;
 use App\Support\Google2FaVerifier;
+use App\Support\SystemSettings;
 use Illuminate\Pagination\Paginator;
 use App\View\Composers\SeoComposer;
 use App\View\Composers\SiteComposer;
@@ -20,6 +21,12 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // The keys and switches an administrator saved override what the .env
+        // says, before anything reads them. This is what makes the Turnstile,
+        // YouTube and SMTP screens real: the services themselves are unchanged
+        // and still read config(), they just get a different answer.
+        SystemSettings::apply();
+
         Paginator::defaultView('pagination');
         Paginator::defaultSimpleView('pagination');
 

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PlaceAdminController;
 use App\Http\Controllers\Admin\AuditAdminController;
 use App\Http\Controllers\Admin\SeoAdminController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\SystemController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Admin\VideoAdminController;
 use Illuminate\Support\Facades\Route;
@@ -101,4 +102,11 @@ Route::prefix('admin')
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
         Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
         Route::post('/settings/releases', [SettingsController::class, 'storeRelease'])->name('settings.releases.store');
+
+        /* Keys and security switches, editable without touching the .env ---- */
+        Route::get('/system', [SystemController::class, 'index'])->name('system.index');
+        Route::put('/system', [SystemController::class, 'update'])->name('system.update');
+        Route::post('/system/test/youtube', [SystemController::class, 'testYoutube'])->name('system.test.youtube');
+        Route::post('/system/test/turnstile', [SystemController::class, 'testTurnstile'])->name('system.test.turnstile');
+        Route::post('/system/test/mail', [SystemController::class, 'testMail'])->name('system.test.mail');
     });

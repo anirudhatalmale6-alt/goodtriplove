@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Services\SecurityLogger;
 use App\Services\TurnstileService;
+use App\Support\SystemSettings;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,9 +29,16 @@ class VerifyTurnstile
 
     public function handle(Request $request, Closure $next): Response
     {
-        if (! config('security.turnstile.secret_key') || ! config('security.turnstile.site_key')) {
-            $this->logger->log('turnstile_not_configured', true, 'warning', [
+        // An administrator can switch this off from the admin, and the check is
+        // skipped anyway while either key is missing. Both cases are logged:
+        // an unprotected production site should be visible in the security log
+        // rather than quietly assumed to be protected.
+        if (! SystemSettings::turnstileActive()) {
+            $this->logger->log('turnstile_skipped', true, 'warning', [
                 'path' => $request->path(),
+                'reason' => SystemSettings::effective('turnstile_enabled')
+                    ? 'keys_missing'
+                    : 'disabled_by_admin',
             ]);
 
             return $next($request);

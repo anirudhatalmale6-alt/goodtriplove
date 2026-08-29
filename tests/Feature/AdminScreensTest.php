@@ -43,6 +43,7 @@ class AdminScreensTest extends TestCase
             'duplicates' => ['admin.videos.duplicates'],
             'ads' => ['admin.ads.index'],
             'settings' => ['admin.settings.index'],
+            'system keys' => ['admin.system.index'],
         ];
     }
 

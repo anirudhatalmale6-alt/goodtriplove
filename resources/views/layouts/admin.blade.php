@@ -61,6 +61,7 @@
         <a class="nav-link {{ request()->is('admin/security-center*') ? 'is-active' : '' }}" href="{{ route('admin.security-center') }}">Security Center</a>
         <a class="nav-link {{ request()->is('admin/audit*') ? 'is-active' : '' }}" href="{{ route('admin.audit.index') }}">Journal des actions</a>
         <a class="nav-link {{ request()->is('admin/settings*') ? 'is-active' : '' }}" href="{{ route('admin.settings.index') }}">Paramètres</a>
+        <a class="nav-link {{ request()->is('admin/system*') ? 'is-active' : '' }}" href="{{ route('admin.system.index') }}">Clés &amp; sécurité</a>
 
         <div class="sidebar__group">&nbsp;</div>
         <a class="nav-link" href="{{ route('home', ['locale' => 'fr']) }}" target="_blank">↗ Voir le site</a>

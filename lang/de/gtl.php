@@ -55,6 +55,7 @@ return [
     'play' => 'Video abspielen',
     'add_to_favorites' => 'Zu Favoriten hinzufügen',
     'watch_on_youtube' => 'Auf YouTube ansehen',
+    'watch_on_platform' => 'Auf :platform ansehen',
     'share' => 'Teilen',
     'report' => 'Melden',
     'views_gtl_label' => 'GoodTripLove-Aufrufe',
@@ -206,7 +207,7 @@ return [
 
     'footer_pitch' => 'Schau. Entdecke. Iss lokal. Besuche. Bleib. Reiseentdeckung per Video, in sechs Sprachen.',
     'footer_rights' => 'Alle Rechte vorbehalten.',
-    'footer_embed_notice' => 'Videos werden im offiziellen YouTube-Player abgespielt. GoodTripLove hostet keine Inhalte.',
+    'footer_embed_notice' => 'Videos werden im offiziellen Player ihrer Ursprungsplattform abgespielt. GoodTripLove hostet keine Inhalte.',
 
     // Two-factor
     'two_factor_setup' => 'Zwei-Faktor-Authentifizierung aktivieren',
@@ -241,13 +242,13 @@ return [
     'cookie_title' => 'Ihre Datenschutz-Einstellungen',
     'cookie_intro' => 'GoodTripLove verwendet Cookies, die für den Betrieb der Website notwendig sind. Video-Player Dritter und die Reichweitenmessung werden nur mit Ihrer Zustimmung aktiviert. Eine Ablehnung blockiert das Surfen nicht.',
     'cookie_necessary' => 'Unbedingt erforderlich (immer aktiv)',
-    'cookie_video' => 'Video-Player Dritter (YouTube)',
+    'cookie_video' => 'Video-Player Dritter (YouTube, TikTok, Instagram, Facebook)',
     'cookie_analytics' => 'Interne Reichweitenmessung',
     'cookie_accept' => 'Alle akzeptieren',
     'cookie_reject' => 'Alle ablehnen',
     'cookie_customize' => 'Anpassen',
     'cookie_save' => 'Auswahl speichern',
-    'consent_video_text' => 'Dieses Video wird von YouTube gehostet. Beim Abspielen werden Cookies Dritter gesetzt.',
+    'consent_video_text' => 'Dieses Video wird von seiner Ursprungsplattform gehostet (YouTube, TikTok, Instagram oder Facebook). Beim Abspielen werden Cookies Dritter gesetzt.',
     'consent_video_accept' => 'Erlauben und abspielen',
     'consent_video_close' => 'Abbrechen',
     'report_content_title' => 'Inhalt melden',

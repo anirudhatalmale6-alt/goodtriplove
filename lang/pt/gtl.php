@@ -55,6 +55,7 @@ return [
     'play' => 'Reproduzir vídeo',
     'add_to_favorites' => 'Adicionar aos favoritos',
     'watch_on_youtube' => 'Ver no YouTube',
+    'watch_on_platform' => 'Ver no :platform',
     'share' => 'Partilhar',
     'report' => 'Denunciar',
     'views_gtl_label' => 'Visualizações GoodTripLove',
@@ -206,7 +207,7 @@ return [
 
     'footer_pitch' => 'Vê. Descobre. Come local. Visita. Fica. Descoberta de viagens em vídeo, em seis idiomas.',
     'footer_rights' => 'Todos os direitos reservados.',
-    'footer_embed_notice' => 'Os vídeos são reproduzidos no leitor oficial do YouTube. Nenhum conteúdo é alojado pela GoodTripLove.',
+    'footer_embed_notice' => 'Os vídeos são reproduzidos no leitor oficial da sua plataforma de origem. Nenhum conteúdo é alojado pela GoodTripLove.',
 
     // Two-factor
     'two_factor_setup' => 'Ativar a autenticação de dois fatores',
@@ -241,13 +242,13 @@ return [
     'cookie_title' => 'As suas escolhas de privacidade',
     'cookie_intro' => 'O GoodTripLove utiliza cookies necessários ao funcionamento do site. Os leitores de vídeo de terceiros e a medição de audiência só são ativados com o seu acordo. Recusar não impede a navegação.',
     'cookie_necessary' => 'Estritamente necessários (sempre ativos)',
-    'cookie_video' => 'Leitores de vídeo de terceiros (YouTube)',
+    'cookie_video' => 'Leitores de vídeo de terceiros (YouTube, TikTok, Instagram, Facebook)',
     'cookie_analytics' => 'Medição de audiência interna',
     'cookie_accept' => 'Aceitar tudo',
     'cookie_reject' => 'Recusar tudo',
     'cookie_customize' => 'Personalizar',
     'cookie_save' => 'Guardar as escolhas',
-    'consent_video_text' => 'Este vídeo é alojado pelo YouTube. Reproduzi-lo irá colocar cookies de terceiros.',
+    'consent_video_text' => 'Este vídeo é alojado pela plataforma de origem (YouTube, TikTok, Instagram ou Facebook). Reproduzi-lo irá colocar cookies de terceiros.',
     'consent_video_accept' => 'Autorizar e reproduzir',
     'consent_video_close' => 'Cancelar',
     'report_content_title' => 'Denunciar conteúdo',

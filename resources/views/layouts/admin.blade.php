@@ -33,6 +33,15 @@
         </a>
         <a class="nav-link {{ request()->is('admin/collector*') ? 'is-active' : '' }}" href="{{ route('admin.collector.index') }}">Collecteur vidéo</a>
 
+        <div class="sidebar__group">Réseaux sociaux</div>
+        @foreach (\App\Support\SocialPlatform::ALL as $socialPlatform)
+            <a class="nav-link {{ request()->is('admin/social/'.$socialPlatform) ? 'is-active' : '' }}"
+               href="{{ route('admin.social.index', ['platform' => $socialPlatform]) }}">
+                <span class="dot-nav" style="background:{{ \App\Support\SocialPlatform::colour($socialPlatform) }}"></span>
+                {{ \App\Support\SocialPlatform::label($socialPlatform) }}
+            </a>
+        @endforeach
+
         <div class="sidebar__group">Structure</div>
         <a class="nav-link {{ request()->is('admin/countries*') ? 'is-active' : '' }}" href="{{ route('admin.countries.index') }}">Pays</a>
         <a class="nav-link {{ request()->is('admin/cities*') ? 'is-active' : '' }}" href="{{ route('admin.cities.index') }}">Villes</a>

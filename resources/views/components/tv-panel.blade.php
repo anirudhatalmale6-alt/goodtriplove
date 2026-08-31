@@ -16,6 +16,11 @@
         @foreach ($playlist as $index => $item)
             <button class="tv-item {{ $index === 0 ? 'is-current' : '' }}" type="button"
                     data-video-id="{{ $item->provider_video_id }}"
+                    {{-- Carried per track: the stage copies these on click, and
+                         without them switching track would replay whichever
+                         video the stage was rendered with. --}}
+                    data-embed-url="{{ $item->embedUrl() }}"
+                    data-aspect="{{ $item->aspectRatio() }}"
                     data-play-url="{{ route('video.play', ['video' => $item->id]) }}"
                     data-title="{{ $item->title }}"
                     data-location="{{ collect([$item->city?->displayName(), $item->country?->displayName()])->filter()->implode(', ') }}">

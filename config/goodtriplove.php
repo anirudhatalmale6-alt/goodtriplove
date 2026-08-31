@@ -116,6 +116,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Social platforms
+    |--------------------------------------------------------------------------
+    | Credentials only. Which platforms are accepted, and how imported videos
+    | are moderated, are administrator decisions and live in the database via
+    | SystemSettings — changing them must not need a deploy.
+    |
+    | Both tokens are empty until Meta and TikTok approve an application.
+    | Nothing breaks while they are: embedding needs no credential at all, and
+    | the metadata fetch degrades to "the platform told us nothing", which the
+    | import screen reports rather than hides.
+    */
+    'social' => [
+        'meta' => [
+            'access_token' => env('META_ACCESS_TOKEN'),
+        ],
+        'tiktok' => [
+            'access_token' => env('TIKTOK_ACCESS_TOKEN'),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Legal
     |--------------------------------------------------------------------------
     | The publisher/host/controller details are placeholders on purpose: they

@@ -119,13 +119,23 @@
     }
   });
 
-  /* ---------- lazy YouTube facade ----------
-     Replaces the thumbnail with the privacy-enhanced iframe on click and
-     registers the GoodTripLove view at the same time. */
+  /* ---------- lazy player facade ----------
+     Replaces the thumbnail with the platform's iframe on click and registers
+     the GoodTripLove view at the same time.
+
+     The address comes from data-embed-url, written by the server, so YouTube,
+     TikTok, Instagram and Facebook all arrive here the same way and this
+     function knows about none of them. Building the URL here was what made the
+     player YouTube-only. */
   function mountPlayer(container, videoId, playUrl) {
+    var src = container.getAttribute('data-embed-url');
+
+    // No embed address means the platform is one we cannot play. Leaving the
+    // thumbnail up is better than an empty black frame.
+    if (!src) return;
+
     var iframe = document.createElement('iframe');
-    iframe.src = 'https://www.youtube-nocookie.com/embed/' + videoId +
-      '?autoplay=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1';
+    iframe.src = src;
     iframe.title = container.getAttribute('data-title') || 'GoodTripLove';
     iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
     iframe.allowFullscreen = true;
@@ -134,6 +144,13 @@
     container.innerHTML = '';
     container.appendChild(iframe);
     container.classList.add('is-playing');
+
+    // TikTok and Reels are filmed vertically. The card stays 16/9 so the grid
+    // keeps its shape, but once a vertical clip is actually playing the frame
+    // follows it — otherwise the video is a narrow strip between two black
+    // bars. Capped in CSS so a tall card cannot fill the whole screen.
+    var aspect = container.getAttribute('data-aspect');
+    if (aspect) container.style.aspectRatio = aspect;
 
     if (playUrl) {
       fetch(playUrl, {
@@ -185,7 +202,12 @@
 
       stage.dataset.videoId = item.dataset.videoId;
       stage.dataset.playUrl = item.dataset.playUrl || '';
+      // The embed address belongs to the track, not to the stage. Copying it
+      // is what makes a TikTok track after a YouTube one play the TikTok.
+      stage.dataset.embedUrl = item.dataset.embedUrl || '';
+      stage.dataset.aspect = item.dataset.aspect || '';
       stage.classList.remove('is-playing');
+      stage.style.aspectRatio = '';
 
       var title = document.querySelector('[data-tv-title]');
       var loc = document.querySelector('[data-tv-location]');

@@ -88,6 +88,59 @@ class SystemSettings
             ],
         ],
 
+        'social' => [
+            'label' => 'Réseaux sociaux (YouTube, TikTok, Instagram, Facebook)',
+            'help' => "Chaque plateforme peut être acceptée ou refusée séparément. Une plateforme désactivée refuse l'ajout d'une nouvelle vidéo, mais ne masque pas celles déjà publiées : retirer une vidéo du site reste une décision par vidéo. Les identifiants ne servent qu'aux informations détaillées et à l'import automatique — le lecteur officiel fonctionne sans aucune clé.",
+            'items' => [
+                'social_youtube_enabled' => [
+                    'type' => 'bool',
+                    'label' => 'Accepter les vidéos YouTube',
+                    'default' => true,
+                ],
+                'social_tiktok_enabled' => [
+                    'type' => 'bool',
+                    'label' => 'Accepter les vidéos TikTok',
+                    'default' => true,
+                    'help' => 'Titre, auteur et miniature sont récupérés sans clé.',
+                ],
+                'social_instagram_enabled' => [
+                    'type' => 'bool',
+                    'label' => 'Accepter les vidéos Instagram',
+                    'default' => true,
+                    'help' => "Instagram ne renvoie ni titre ni miniature sans application Meta approuvée : le titre est à saisir à la main tant que l'application n'est pas validée.",
+                ],
+                'social_facebook_enabled' => [
+                    'type' => 'bool',
+                    'label' => 'Accepter les vidéos Facebook',
+                    'default' => true,
+                ],
+                'social_require_approval' => [
+                    'type' => 'bool',
+                    'label' => 'Validation manuelle obligatoire avant publication',
+                    'default' => true,
+                    'help' => "Désactiver ce réglage publie immédiatement toute vidéo ajoutée, sans que personne ne l'ait regardée.",
+                ],
+                'social_duplicate_check' => [
+                    'type' => 'bool',
+                    'label' => 'Contrôle anti-doublon automatique',
+                    'default' => true,
+                    'help' => "Refuse une vidéo déjà présente, y compris republiée sous un autre identifiant ou sur une autre plateforme. L'identifiant exact est refusé dans tous les cas par la base.",
+                ],
+                'social_meta_token' => [
+                    'type' => 'secret',
+                    'label' => 'Jeton d\'accès Meta (Instagram + Facebook)',
+                    'config' => 'goodtriplove.social.meta.access_token',
+                    'help' => "À renseigner le jour où ton application Meta est approuvée. Stocké chiffré, jamais réaffiché, jamais envoyé au navigateur.",
+                ],
+                'social_tiktok_token' => [
+                    'type' => 'secret',
+                    'label' => 'Jeton d\'accès TikTok',
+                    'config' => 'goodtriplove.social.tiktok.access_token',
+                    'help' => "Nécessaire uniquement pour importer automatiquement le fil d'un compte. L'ajout par URL n'en a pas besoin.",
+                ],
+            ],
+        ],
+
         'mail' => [
             'label' => 'Envoi des emails (SMTP)',
             'help' => 'Sert aux codes de vérification à 6 chiffres, à la réinitialisation de mot de passe et aux alertes. Le serveur ne peut pas livrer directement vers Gmail : le port 25 sortant est bloqué et le SPF du domaine n\'autorise que les serveurs d\'OVH. Il faut donc passer par un serveur d\'envoi authentifié.',

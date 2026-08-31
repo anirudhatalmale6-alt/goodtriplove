@@ -55,6 +55,7 @@ return [
     'play' => 'Play video',
     'add_to_favorites' => 'Add to favourites',
     'watch_on_youtube' => 'Watch on YouTube',
+    'watch_on_platform' => 'Watch on :platform',
     'share' => 'Share',
     'report' => 'Report',
     'views_gtl_label' => 'GoodTripLove views',
@@ -206,7 +207,7 @@ return [
 
     'footer_pitch' => 'Watch. Discover. Eat local. Visit. Stay. Video-first travel discovery, in six languages.',
     'footer_rights' => 'All rights reserved.',
-    'footer_embed_notice' => 'Videos play in the official YouTube player. No content is hosted by GoodTripLove.',
+    'footer_embed_notice' => 'Videos play in the official player of their original platform. No content is hosted by GoodTripLove.',
 
     // Two-factor
     'two_factor_setup' => 'Enable two-factor authentication',
@@ -241,13 +242,13 @@ return [
     'cookie_title' => 'Your privacy choices',
     'cookie_intro' => 'GoodTripLove uses cookies that are necessary for the site to work. Third-party video players and audience measurement are only enabled with your agreement. Refusing does not block browsing.',
     'cookie_necessary' => 'Strictly necessary (always on)',
-    'cookie_video' => 'Third-party video players (YouTube)',
+    'cookie_video' => 'Third-party video players (YouTube, TikTok, Instagram, Facebook)',
     'cookie_analytics' => 'Internal audience measurement',
     'cookie_accept' => 'Accept all',
     'cookie_reject' => 'Reject all',
     'cookie_customize' => 'Customise',
     'cookie_save' => 'Save my choices',
-    'consent_video_text' => 'This video is hosted by YouTube. Playing it will set third-party cookies.',
+    'consent_video_text' => 'This video is hosted by its original platform (YouTube, TikTok, Instagram or Facebook). Playing it will set third-party cookies.',
     'consent_video_accept' => 'Allow and play',
     'consent_video_close' => 'Cancel',
     'report_content_title' => 'Report content',

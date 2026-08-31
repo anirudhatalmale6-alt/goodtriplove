@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Support\SocialPlatform;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -140,40 +141,61 @@ class Video extends Model
             return $this->thumbnail_url;
         }
 
-        return sprintf(
-            '%s/vi/%s/hqdefault.jpg',
-            rtrim(config('goodtriplove.player.thumbnail_domain'), '/'),
-            $this->provider_video_id
-        );
+        // Only YouTube publishes a thumbnail at a guessable address. For the
+        // others a missing image means the platform never gave us one, and a
+        // generated placeholder beats a broken <img>.
+        return SocialPlatform::thumbnailUrl($this->provider, $this->provider_video_id)
+            ?? asset('img/platform/'.(SocialPlatform::exists($this->provider) ? $this->provider : 'unknown').'.svg');
     }
 
-    /** Privacy-enhanced embed URL. Built only when the visitor asks to play. */
-    public function embedUrl(array $params = []): string
+    /** True when we hold a real thumbnail rather than a generated placeholder. */
+    public function hasRealThumbnail(): bool
     {
-        $params = array_merge([
-            'autoplay' => 1,
-            'rel' => 0,
-            'modestbranding' => 1,
-            'playsinline' => 1,
-        ], $params);
-
-        return sprintf(
-            '%s/embed/%s?%s',
-            rtrim(config('goodtriplove.player.privacy_domain'), '/'),
-            $this->provider_video_id,
-            http_build_query($params)
-        );
+        return filled($this->thumbnail_hq_url)
+            || filled($this->thumbnail_url)
+            || SocialPlatform::thumbnailUrl($this->provider, $this->provider_video_id) !== null;
     }
 
-    /** Demo placeholder rows carry no real provider id, so they never play. */
+    /** Embed URL for this platform. Built only when the visitor asks to play. */
+    public function embedUrl(): ?string
+    {
+        return SocialPlatform::embedUrl($this->provider, $this->provider_video_id, $this->original_url);
+    }
+
+    /**
+     * Demo placeholder rows carry no real provider id, so they never play.
+     *
+     * The provider must be one we know how to embed — a row left over from an
+     * older import, or a platform added to the column but not to the registry,
+     * renders a static thumbnail instead of a play button that does nothing.
+     */
     public function isPlayable(): bool
     {
-        return $this->provider === 'youtube' && $this->embeddable;
+        return SocialPlatform::exists($this->provider)
+            && $this->embeddable
+            && $this->provider_video_id !== ''
+            && $this->embedUrl() !== null;
     }
 
     public function watchUrl(): string
     {
-        return 'https://www.youtube.com/watch?v='.$this->provider_video_id;
+        return SocialPlatform::watchUrl($this->provider, $this->provider_video_id, $this->original_url);
+    }
+
+    public function platformLabel(): string
+    {
+        return SocialPlatform::label($this->provider);
+    }
+
+    public function platformColour(): string
+    {
+        return SocialPlatform::colour($this->provider);
+    }
+
+    /** Vertical for TikTok and Reels, 16/9 for the rest. */
+    public function aspectRatio(): string
+    {
+        return SocialPlatform::aspectRatio($this->provider);
     }
 
     public function durationForHumans(): ?string

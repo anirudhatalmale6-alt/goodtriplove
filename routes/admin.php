@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\GeographyController;
 use App\Http\Controllers\Admin\PlaceAdminController;
 use App\Http\Controllers\Admin\AuditAdminController;
 use App\Http\Controllers\Admin\SeoAdminController;
+use App\Http\Controllers\Admin\SocialVideoAdminController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SystemController;
 use App\Http\Controllers\Admin\UserAdminController;
@@ -38,6 +39,16 @@ Route::prefix('admin')
         Route::post('/videos/{video:id}/reject', [VideoAdminController::class, 'reject'])->name('videos.reject');
         Route::post('/videos/{video:id}/places', [VideoAdminController::class, 'attachPlace'])->name('videos.places.attach');
         Route::delete('/videos/{video:id}/places/{place:id}', [VideoAdminController::class, 'detachPlace'])->name('videos.places.detach');
+
+        /* Social platforms --------------------------------------------- */
+        // {platform} is constrained so an unknown value 404s at the router
+        // rather than reaching a controller that would have to guess.
+        Route::get('/social/{platform}', [SocialVideoAdminController::class, 'index'])
+            ->whereIn('platform', \App\Support\SocialPlatform::ALL)->name('social.index');
+        Route::post('/social/{platform}', [SocialVideoAdminController::class, 'store'])
+            ->whereIn('platform', \App\Support\SocialPlatform::ALL)->name('social.store');
+        Route::post('/social/video/{video:id}/disable', [SocialVideoAdminController::class, 'disable'])->name('social.disable');
+        Route::post('/social/video/{video:id}/enable', [SocialVideoAdminController::class, 'enable'])->name('social.enable');
 
         /* Places ------------------------------------------------------- */
         Route::get('/places', [PlaceAdminController::class, 'index'])->name('places.index');

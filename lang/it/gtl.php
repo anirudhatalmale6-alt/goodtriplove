@@ -55,6 +55,7 @@ return [
     'play' => 'Riproduci il video',
     'add_to_favorites' => 'Aggiungi ai preferiti',
     'watch_on_youtube' => 'Guarda su YouTube',
+    'watch_on_platform' => 'Guarda su :platform',
     'share' => 'Condividi',
     'report' => 'Segnala',
     'views_gtl_label' => 'Visualizzazioni GoodTripLove',
@@ -206,7 +207,7 @@ return [
 
     'footer_pitch' => 'Guarda. Scopri. Mangia locale. Visita. Soggiorna. La scoperta di viaggio in video, in sei lingue.',
     'footer_rights' => 'Tutti i diritti riservati.',
-    'footer_embed_notice' => 'I video sono riprodotti nel player ufficiale YouTube. Nessun contenuto è ospitato da GoodTripLove.',
+    'footer_embed_notice' => 'I video sono riprodotti nel player ufficiale della loro piattaforma di origine. Nessun contenuto è ospitato da GoodTripLove.',
 
     // Two-factor
     'two_factor_setup' => 'Attivare l’autenticazione a due fattori',
@@ -241,13 +242,13 @@ return [
     'cookie_title' => 'Le sue scelte sulla privacy',
     'cookie_intro' => 'GoodTripLove usa cookie necessari al funzionamento del sito. I player video di terze parti e la misurazione del pubblico sono attivati solo con il suo consenso. Rifiutare non impedisce la navigazione.',
     'cookie_necessary' => 'Strettamente necessari (sempre attivi)',
-    'cookie_video' => 'Player video di terze parti (YouTube)',
+    'cookie_video' => 'Player video di terze parti (YouTube, TikTok, Instagram, Facebook)',
     'cookie_analytics' => 'Misurazione interna del pubblico',
     'cookie_accept' => 'Accetta tutto',
     'cookie_reject' => 'Rifiuta tutto',
     'cookie_customize' => 'Personalizza',
     'cookie_save' => 'Salva le scelte',
-    'consent_video_text' => 'Questo video è ospitato da YouTube. Riprodurlo installerà cookie di terze parti.',
+    'consent_video_text' => 'Questo video è ospitato dalla sua piattaforma di origine (YouTube, TikTok, Instagram o Facebook). Riprodurlo installerà cookie di terze parti.',
     'consent_video_accept' => 'Autorizza e riproduci',
     'consent_video_close' => 'Annulla',
     'report_content_title' => 'Segnalare un contenuto',

@@ -47,7 +47,10 @@ class TvController extends Controller
             'items' => $videos->map(fn ($video) => [
                 'id' => $video->id,
                 'title' => $video->title,
+                'provider' => $video->provider,
                 'provider_id' => $video->provider_video_id,
+                'embed_url' => $video->embedUrl(),
+                'aspect' => $video->aspectRatio(),
                 'thumbnail' => $video->thumbnail(),
                 'duration' => $video->durationForHumans(),
                 'city' => $video->city?->displayName(),

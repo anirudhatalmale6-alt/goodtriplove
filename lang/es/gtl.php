@@ -55,6 +55,7 @@ return [
     'play' => 'Reproducir vídeo',
     'add_to_favorites' => 'Añadir a favoritos',
     'watch_on_youtube' => 'Ver en YouTube',
+    'watch_on_platform' => 'Ver en :platform',
     'share' => 'Compartir',
     'report' => 'Reportar',
     'views_gtl_label' => 'Visualizaciones GoodTripLove',
@@ -206,7 +207,7 @@ return [
 
     'footer_pitch' => 'Mira. Descubre. Come local. Visita. Alójate. Descubrimiento de viajes en vídeo, en seis idiomas.',
     'footer_rights' => 'Todos los derechos reservados.',
-    'footer_embed_notice' => 'Los vídeos se reproducen en el reproductor oficial de YouTube. GoodTripLove no aloja ningún contenido.',
+    'footer_embed_notice' => 'Los vídeos se reproducen en el reproductor oficial de su plataforma de origen. GoodTripLove no aloja ningún contenido.',
 
     // Two-factor
     'two_factor_setup' => 'Activar la autenticación en dos pasos',
@@ -241,13 +242,13 @@ return [
     'cookie_title' => 'Sus opciones de privacidad',
     'cookie_intro' => 'GoodTripLove utiliza cookies necesarias para el funcionamiento del sitio. Los reproductores de vídeo de terceros y la medición de audiencia solo se activan con su acuerdo. Rechazar no impide la navegación.',
     'cookie_necessary' => 'Estrictamente necesarias (siempre activas)',
-    'cookie_video' => 'Reproductores de vídeo de terceros (YouTube)',
+    'cookie_video' => 'Reproductores de vídeo de terceros (YouTube, TikTok, Instagram, Facebook)',
     'cookie_analytics' => 'Medición de audiencia interna',
     'cookie_accept' => 'Aceptar todo',
     'cookie_reject' => 'Rechazar todo',
     'cookie_customize' => 'Personalizar',
     'cookie_save' => 'Guardar mis opciones',
-    'consent_video_text' => 'Este vídeo está alojado en YouTube. Reproducirlo instalará cookies de terceros.',
+    'consent_video_text' => 'Este vídeo está alojado en su plataforma de origen (YouTube, TikTok, Instagram o Facebook). Reproducirlo instalará cookies de terceros.',
     'consent_video_accept' => 'Autorizar y reproducir',
     'consent_video_close' => 'Cancelar',
     'report_content_title' => 'Reportar contenido',

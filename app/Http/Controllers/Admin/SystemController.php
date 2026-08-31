@@ -57,6 +57,17 @@ class SystemController extends Controller
             'settings.turnstile_site_key' => ['nullable', 'string', 'max:255'],
             'settings.turnstile_secret_key' => ['nullable', 'string', 'max:255'],
             'settings.youtube_api_key' => ['nullable', 'string', 'max:255'],
+            // Secrets are read from the validated data, so a key missing here
+            // is silently never saved. The booleans below come from
+            // $request->boolean() and are listed for the same reason.
+            'settings.social_youtube_enabled' => ['nullable', 'boolean'],
+            'settings.social_tiktok_enabled' => ['nullable', 'boolean'],
+            'settings.social_instagram_enabled' => ['nullable', 'boolean'],
+            'settings.social_facebook_enabled' => ['nullable', 'boolean'],
+            'settings.social_require_approval' => ['nullable', 'boolean'],
+            'settings.social_duplicate_check' => ['nullable', 'boolean'],
+            'settings.social_meta_token' => ['nullable', 'string', 'max:500'],
+            'settings.social_tiktok_token' => ['nullable', 'string', 'max:500'],
             'settings.mail_host' => ['nullable', 'string', 'max:190'],
             'settings.mail_port' => ['nullable', 'integer', 'between:1,65535'],
             'settings.mail_username' => ['nullable', 'string', 'max:190'],

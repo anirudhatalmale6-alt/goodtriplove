@@ -59,6 +59,7 @@ return [
     'play' => 'Lancer la vidéo',
     'add_to_favorites' => 'Ajouter aux favoris',
     'watch_on_youtube' => 'Voir sur YouTube',
+    'watch_on_platform' => 'Voir sur :platform',
     'share' => 'Partager',
     'report' => 'Signaler',
     'views_gtl_label' => 'Vues GoodTripLove',
@@ -220,7 +221,7 @@ return [
     // Footer
     'footer_pitch' => 'Regarde. Découvre. Mange local. Visite. Séjourne. La découverte de voyage par la vidéo, dans six langues.',
     'footer_rights' => 'Tous droits réservés.',
-    'footer_embed_notice' => 'Les vidéos sont lues via le lecteur officiel YouTube. Aucun contenu n’est hébergé par GoodTripLove.',
+    'footer_embed_notice' => 'Les vidéos sont lues via le lecteur officiel de leur plateforme d’origine. Aucun contenu n’est hébergé par GoodTripLove.',
 
     // Two-factor
     'two_factor_setup' => 'Activer la double authentification',
@@ -255,13 +256,13 @@ return [
     'cookie_title' => 'Vos choix de confidentialité',
     'cookie_intro' => 'GoodTripLove utilise des cookies nécessaires au fonctionnement du site. Les lecteurs vidéo tiers et la mesure d’audience ne sont activés qu’avec votre accord. Refuser n’empêche pas la navigation.',
     'cookie_necessary' => 'Nécessaires au fonctionnement (toujours actifs)',
-    'cookie_video' => 'Lecteurs vidéo tiers (YouTube)',
+    'cookie_video' => 'Lecteurs vidéo tiers (YouTube, TikTok, Instagram, Facebook)',
     'cookie_analytics' => 'Mesure d’audience interne',
     'cookie_accept' => 'Tout accepter',
     'cookie_reject' => 'Tout refuser',
     'cookie_customize' => 'Personnaliser',
     'cookie_save' => 'Enregistrer mes choix',
-    'consent_video_text' => 'Cette vidéo est hébergée par YouTube. La lire déposera des cookies tiers.',
+    'consent_video_text' => 'Cette vidéo est hébergée par la plateforme d’origine (YouTube, TikTok, Instagram ou Facebook). La lire déposera des cookies tiers.',
     'consent_video_accept' => 'Autoriser et lire',
     'consent_video_close' => 'Annuler',
     'report_content_title' => 'Signaler un contenu',

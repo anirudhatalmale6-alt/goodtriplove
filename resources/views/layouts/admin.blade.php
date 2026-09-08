@@ -55,7 +55,8 @@
             Signalements @if ($openNotices) <span class="pill">{{ $openNotices }}</span> @endif
         </a>
         <a class="nav-link {{ request()->is('admin/moderation*') ? 'is-active' : '' }}" href="{{ route('admin.moderation') }}">Modération</a>
-        <a class="nav-link {{ request()->is('admin/seo*') ? 'is-active' : '' }}" href="{{ route('admin.seo.index') }}">SEO</a>
+        <a class="nav-link {{ request()->is('admin/seo') || request()->is('admin/seo/*') ? 'is-active' : '' }}" href="{{ route('admin.seo.index') }}">SEO</a>
+        <a class="nav-link {{ request()->is('admin/seo-ai*') ? 'is-active' : '' }}" href="{{ route('admin.seo-ai.index') }}">SEO AI Manager</a>
         <a class="nav-link {{ request()->is('admin/legal*') ? 'is-active' : '' }}" href="{{ route('admin.legal.index') }}">Textes légaux</a>
 
         <div class="sidebar__group">Exploitation</div>

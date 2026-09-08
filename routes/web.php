@@ -26,6 +26,12 @@ Route::pattern('locale', implode('|', array_keys(config('goodtriplove.locales'))
 
 // Language-less entry points hand the visitor to their own language.
 Route::get('/', fn () => redirect()->route('home', ['locale' => app()->getLocale()]));
+// Loaded here, not at the end of the file: the module's own
+// /sitemap-seo-ai.xml must be registered BEFORE the generic
+// /sitemap-{section}.xml below, which would otherwise match it first
+// and 404 on an unknown section.
+require base_path('routes/seo_ai.php');
+
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/sitemap-{section}.xml', [SitemapController::class, 'section'])->name('sitemap.section');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');

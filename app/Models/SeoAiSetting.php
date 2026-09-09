@@ -26,7 +26,7 @@ class SeoAiSetting extends Model
             'ollama_url' => config('seo_ai.ollama.url'),
             'ollama_model' => config('seo_ai.ollama.model'),
             'quality_threshold' => config('seo_ai.quality_threshold', 72),
-            'auto_publish' => true,
+            'auto_publish' => false,
             'weekly_day' => config('seo_ai.weekly_day', 'monday'),
             'weekly_time' => config('seo_ai.weekly_time', '04:45'),
         ]);

@@ -12,7 +12,7 @@ class SeoAiPublisher
 {
     public function __construct(
         private SeoAiPlanner $planner,
-        private OpenAiSeoGenerator $generator,
+        private SeoGeneratorFactory $generators,
         private SeoAiQualityService $quality,
     ) {}
 
@@ -29,7 +29,7 @@ class SeoAiPublisher
 
         try {
             $context = $this->planner->context($topic);
-            $translations = $this->generator->generate($context);
+            $translations = $this->generators->make()->generate($context);
             $quality = $this->quality->score($translations, $context);
             $settings = SeoAiSetting::current();
             $threshold = $settings->quality_threshold ?: config('seo_ai.quality_threshold', 72);

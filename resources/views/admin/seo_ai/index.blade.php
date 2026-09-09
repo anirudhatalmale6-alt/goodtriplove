@@ -8,6 +8,40 @@
 <h3>Configuration</h3>
 <form method="post" action="{{ route('admin.seo-ai.settings') }}">@csrf @method('put')
 <div class="grid-3">
+<div class="field">
+    <label>Moteur de génération</label>
+    <select name="provider" required>
+        @foreach ($providers as $p)
+            <option value="{{ $p }}" @selected($settings->provider === $p)>{{ \App\Services\SeoAi\SeoGeneratorFactory::label($p) }}</option>
+        @endforeach
+    </select>
+    <div class="small muted">Ollama tourne sur ce serveur et ne coute rien. OpenAI est payant mais écrit mieux. Le changement prend effet à la génération suivante.</div>
+</div>
+
+{{-- The reachability panel: "nothing was generated" is either a service that is
+     down or a model name that was never pulled, and those need opposite fixes. --}}
+<div class="field">
+    <label>État d'Ollama</label>
+    @if ($ollamaStatus['reachable'])
+        <div class="small">
+            <span style="color:#22c55e">&#9679;</span> Service joignable.
+            @if ($ollamaStatus['has_model'])
+                <span style="color:#22c55e">Modèle « {{ $settings->ollama_model }} » disponible.</span>
+            @else
+                <span style="color:#f59e0b">Le modèle « {{ $settings->ollama_model }} » n'est pas téléchargé.</span>
+            @endif
+            <div class="muted">Modèles présents : {{ $ollamaStatus['models'] ? implode(', ', $ollamaStatus['models']) : 'aucun' }}</div>
+        </div>
+    @else
+        <div class="small" style="color:#ef4444">
+            &#9679; Ollama ne répond pas{{ $ollamaStatus['error'] ? ' ('.$ollamaStatus['error'].')' : '' }}.
+            La génération locale échouera tant que ce point n'est pas résolu.
+        </div>
+    @endif
+</div>
+
+<div class="field"><label>URL Ollama</label><input name="ollama_url" value="{{ $settings->ollama_url }}" required></div>
+<div class="field"><label>Modèle Ollama</label><input name="ollama_model" value="{{ $settings->ollama_model }}" required></div>
 <div class="field"><label>Modèle OpenAI</label><input name="model" value="{{ $settings->model }}" required></div>
 <div class="field"><label>Seuil qualité /100</label><input type="number" min="50" max="95" name="quality_threshold" value="{{ $settings->quality_threshold }}" required></div>
 <div class="field"><label>Nouvelle clé API (laisser vide pour conserver)</label><input type="password" name="api_key" autocomplete="new-password"></div>

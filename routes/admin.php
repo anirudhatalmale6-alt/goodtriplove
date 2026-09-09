@@ -121,3 +121,5 @@ Route::prefix('admin')
         Route::post('/system/test/turnstile', [SystemController::class, 'testTurnstile'])->name('system.test.turnstile');
         Route::post('/system/test/mail', [SystemController::class, 'testMail'])->name('system.test.mail');
     });
+
+require base_path('routes/seo_ai_admin.php');

@@ -76,6 +76,7 @@ class SitemapController extends Controller
             'Allow: /',
             '',
             'Sitemap: '.route('sitemap'),
+            'Sitemap: '.route('seo-ai.sitemap'),
         ];
 
         return response(implode("\n", $lines), 200, ['Content-Type' => 'text/plain']);

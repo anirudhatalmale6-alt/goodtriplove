@@ -58,3 +58,5 @@ Schedule::command('growth:seo-sitemap')->dailyAt('05:00')->withoutOverlapping(60
 // --- Housekeeping -------------------------------------------------------
 Schedule::command('auth:clear-resets')->daily();
 Schedule::command('model:prune')->daily();
+
+require base_path('routes/seo_ai_console.php');

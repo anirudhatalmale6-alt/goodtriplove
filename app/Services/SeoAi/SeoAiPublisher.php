@@ -21,8 +21,18 @@ class SeoAiPublisher
         $topic = $this->planner->nextTopic();
         if (!$topic) return null;
 
+        // Only the keys that are actually columns. The topic array also carries
+        // the planner's working numbers (support_count, priority, and the
+        // per-source counts), and spreading it whole makes MySQL reject the
+        // insert with "Unknown column". That was latent in the module from the
+        // start — unreachable only because the planner never returned a topic.
+        // The full topic is preserved in generation_context below.
         $page = SeoAiPage::create([
-            ...$topic,
+            'topic_key' => $topic['topic_key'],
+            'topic_type' => $topic['topic_type'],
+            'country_id' => $topic['country_id'] ?? null,
+            'city_id' => $topic['city_id'] ?? null,
+            'category_id' => $topic['category_id'] ?? null,
             'status' => SeoAiPage::STATUS_DRAFT,
             'indexable' => false,
         ]);

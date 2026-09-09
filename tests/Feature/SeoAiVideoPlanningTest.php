@@ -179,4 +179,37 @@ class SeoAiVideoPlanningTest extends TestCase
         );
         $this->assertSame(8, $result['details']['supporting_videos']);
     }
+
+    /**
+     * The publisher must persist a planned topic without choking on the
+     * planner's working numbers. This failed on the very first real run with
+     * "Unknown column 'support_count'".
+     */
+    public function test_a_planned_topic_can_actually_be_persisted(): void
+    {
+        [$country, $city, $category] = $this->scaffold();
+
+        foreach (range(1, 4) as $i) {
+            $this->video([
+                'country_id' => $country->id, 'city_id' => $city->id, 'category_id' => $category->id,
+            ]);
+        }
+
+        \Illuminate\Support\Facades\Http::fake([
+            '127.0.0.1:11434/api/generate' => \Illuminate\Support\Facades\Http::response([
+                'response' => json_encode([
+                    'slug' => 'lisbonne', 'title' => 'Titre', 'meta_description' => 'Description assez longue pour tenir.',
+                    'h1' => 'Titre', 'excerpt' => 'Intro.', 'keywords' => ['a'],
+                    'sections' => [['heading' => 'S', 'paragraphs' => ['P']]],
+                    'faq' => [['question' => 'Q', 'answer' => 'A']],
+                ]),
+            ]),
+        ]);
+
+        $page = app(\App\Services\SeoAi\SeoAiPublisher::class)->generateNext(true);
+
+        $this->assertNotNull($page, 'the topic was planned but no page was created');
+        $this->assertDatabaseHas('seo_ai_pages', ['id' => $page->id, 'topic_type' => 'city_category']);
+        $this->assertNull($page->last_error);
+    }
 }

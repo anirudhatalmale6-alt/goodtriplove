@@ -17,9 +17,16 @@ class SeoAiQualityService
         $details['language_coverage'] = $coverage.'/'.count($locales);
         $score += (int) round(20 * ($coverage / max(1, count($locales))));
 
+        // Supporting material is places AND videos. Scoring places only meant
+        // a catalogue with none could reach at most 70 of 100 — below the
+        // default threshold of 72 — so no page could ever pass, whatever the
+        // model wrote.
         $supportedPlaces = count($context['places'] ?? []);
+        $supportedVideos = count($context['videos'] ?? []);
+        $supporting = $supportedPlaces + $supportedVideos;
         $details['supporting_places'] = $supportedPlaces;
-        $score += min(20, $supportedPlaces * 4);
+        $details['supporting_videos'] = $supportedVideos;
+        $score += min(20, $supporting * 4);
 
         $contentPoints = 0;
         $titles = [];
@@ -37,7 +44,8 @@ class SeoAiQualityService
         $details['unique_titles'] = $uniqueTitles;
         $score += $uniqueTitles === count($translations) ? 10 : 0;
 
-        $hasLinks = $supportedPlaces >= 2;
+        // Two things to link to internally — a place or a video will do.
+        $hasLinks = $supporting >= 2;
         $details['internal_link_targets'] = $hasLinks;
         $score += $hasLinks ? 10 : 0;
 

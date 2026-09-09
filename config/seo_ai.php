@@ -24,10 +24,12 @@ return [
     'weekly_day' => env('SEO_AI_WEEKLY_DAY', 'monday'),
     'weekly_time' => env('SEO_AI_WEEKLY_TIME', '04:45'),
     'topic_cooldown_weeks' => (int) env('SEO_AI_TOPIC_COOLDOWN_WEEKS', 52),
-    'min_places_city_category' => 2,
-    'min_places_country_category' => 3,
-    'min_places_city_guide' => 3,
-    'min_places_category_guide' => 4,
+    // Support is videos + places. The old keys counted places only, which on a
+    // catalogue with zero places meant no topic could ever qualify.
+    'min_support_city_category' => (int) env('SEO_AI_MIN_CITY_CATEGORY', 2),
+    'min_support_country_category' => (int) env('SEO_AI_MIN_COUNTRY_CATEGORY', 3),
+    'min_support_city_guide' => (int) env('SEO_AI_MIN_CITY_GUIDE', 3),
+    'min_support_category_guide' => (int) env('SEO_AI_MIN_CATEGORY_GUIDE', 4),
     'max_supporting_places' => 12,
     'max_supporting_videos' => 12,
 ];

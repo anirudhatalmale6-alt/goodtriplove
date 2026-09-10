@@ -44,9 +44,25 @@ abstract class AbstractSeoGenerator implements SeoGenerator
                 continue;
             }
 
-            if ($data !== null) {
-                $result[$locale] = $this->normalize($data, $locale);
+            if ($data === null) {
+                continue;
             }
+
+            $normalized = $this->normalize($data, $locale);
+
+            // An empty object is valid JSON, and the first production run
+            // stored six pages built entirely out of normalize()'s defaults.
+            // A page with no body is not a page.
+            if (! $normalized['sections']) {
+                Log::warning('seo-ai: model returned no body', [
+                    'locale' => $locale,
+                    'provider' => $this->describe(),
+                ]);
+
+                continue;
+            }
+
+            $result[$locale] = $normalized;
         }
 
         if (! $result) {
@@ -104,6 +120,60 @@ Exactly this shape:
 CATALOGUE_CONTEXT:
 {$catalogue}
 PROMPT;
+    }
+
+    /**
+     * The shape the model must return, as a JSON schema.
+     *
+     * `format: "json"` alone is not enough and is how the first real run
+     * produced six empty pages: it constrains SYNTAX, and the cheapest valid
+     * JSON is `{}`. A small model satisfies that and stops. Requiring the keys
+     * and a minimum number of sections and paragraphs is what makes it write.
+     */
+    protected function responseSchema(): array
+    {
+        $paragraphs = [
+            'type' => 'array',
+            'minItems' => 2,
+            'items' => ['type' => 'string', 'minLength' => 180],
+        ];
+
+        return [
+            'type' => 'object',
+            'properties' => [
+                'slug' => ['type' => 'string'],
+                'title' => ['type' => 'string', 'minLength' => 20],
+                'meta_description' => ['type' => 'string', 'minLength' => 110],
+                'h1' => ['type' => 'string', 'minLength' => 15],
+                'excerpt' => ['type' => 'string', 'minLength' => 60],
+                'keywords' => ['type' => 'array', 'minItems' => 3, 'items' => ['type' => 'string']],
+                'sections' => [
+                    'type' => 'array',
+                    'minItems' => 4,
+                    'items' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'heading' => ['type' => 'string', 'minLength' => 8],
+                            'paragraphs' => $paragraphs,
+                        ],
+                        'required' => ['heading', 'paragraphs'],
+                    ],
+                ],
+                'faq' => [
+                    'type' => 'array',
+                    'minItems' => 3,
+                    'items' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'question' => ['type' => 'string', 'minLength' => 10],
+                            'answer' => ['type' => 'string', 'minLength' => 80],
+                        ],
+                        'required' => ['question', 'answer'],
+                    ],
+                ],
+            ],
+            'required' => ['slug', 'title', 'meta_description', 'h1', 'excerpt', 'sections', 'faq'],
+        ];
     }
 
     /**

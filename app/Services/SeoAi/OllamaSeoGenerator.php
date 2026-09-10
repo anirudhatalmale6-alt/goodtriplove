@@ -41,12 +41,14 @@ class OllamaSeoGenerator extends AbstractSeoGenerator
                 'stream' => false,
                 // Qwen3 reasons out loud by default; the module wants JSON only.
                 'think' => false,
-                // Ollama can constrain decoding to valid JSON. This is what
-                // makes a small model dependable here rather than hopeful.
-                'format' => 'json',
+                // A full JSON schema, not the bare 'json' flag: the flag only
+                // guarantees the answer parses, and `{}` parses. Measured on
+                // this server, the schema turns an empty object into a real
+                // page in about two minutes per language.
+                'format' => $this->responseSchema(),
                 'options' => [
                     'temperature' => (float) config('seo_ai.ollama.temperature', 0.35),
-                    'num_predict' => (int) config('seo_ai.ollama.num_predict', 2400),
+                    'num_predict' => (int) config('seo_ai.ollama.num_predict', 3200),
                     'num_ctx' => (int) config('seo_ai.ollama.num_ctx', 8192),
                     'num_thread' => (int) config('seo_ai.ollama.num_thread', 4),
                 ],

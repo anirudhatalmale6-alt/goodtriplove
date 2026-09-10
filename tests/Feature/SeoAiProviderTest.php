@@ -137,7 +137,7 @@ class SeoAiProviderTest extends TestCase
             $body = $request->data();
 
             return $body['think'] === false
-                && $body['format'] === 'json'
+                && is_array($body['format'])
                 && $body['options']['num_thread'] < 6;
         });
     }
@@ -201,5 +201,50 @@ class SeoAiProviderTest extends TestCase
             ->assertRedirect();
 
         $this->assertSame('openai', SeoAiSetting::current()->fresh()->provider);
+    }
+
+    /**
+     * The failure that produced six empty pages in production.
+     *
+     * `format: "json"` guarantees the answer parses, and `{}` parses. The
+     * model satisfied the constraint without writing anything, and normalize()
+     * dressed the silence up with default values. A request must therefore
+     * carry a real schema, and an empty answer must be refused rather than
+     * stored.
+     */
+    public function test_the_request_sends_a_schema_not_just_the_json_flag(): void
+    {
+        Http::fake(['127.0.0.1:11434/api/generate' => Http::response(['response' => $this->page('Titre')])]);
+
+        app(OllamaSeoGenerator::class)->generate(['places' => []]);
+
+        Http::assertSent(function ($request) {
+            $format = $request->data()['format'] ?? null;
+
+            return is_array($format)
+                && ($format['required'] ?? null)
+                && in_array('sections', $format['required'], true)
+                && ($format['properties']['sections']['minItems'] ?? 0) >= 3;
+        });
+    }
+
+    /** An empty object is valid JSON and must not become a page. */
+    public function test_an_empty_object_is_not_accepted_as_a_page(): void
+    {
+        Http::fake(['127.0.0.1:11434/api/generate' => Http::response(['response' => '{}'])]);
+
+        $this->expectException(\RuntimeException::class);
+        app(OllamaSeoGenerator::class)->generate(['places' => []]);
+    }
+
+    /** A page with a title but no body is the same silence in a nicer hat. */
+    public function test_a_response_with_no_sections_is_refused(): void
+    {
+        Http::fake(['127.0.0.1:11434/api/generate' => Http::response([
+            'response' => json_encode(['title' => 'Un titre', 'h1' => 'Un titre', 'sections' => [], 'faq' => []]),
+        ])]);
+
+        $this->expectException(\RuntimeException::class);
+        app(OllamaSeoGenerator::class)->generate(['places' => []]);
     }
 }

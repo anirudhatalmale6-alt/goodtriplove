@@ -13,7 +13,7 @@ return [
         'url' => env('SEO_AI_OLLAMA_URL', 'http://127.0.0.1:11434'),
         'model' => env('SEO_AI_OLLAMA_MODEL', 'qwen3:4b'),
         'num_thread' => (int) env('SEO_AI_OLLAMA_THREADS', 4),
-        'num_predict' => (int) env('SEO_AI_OLLAMA_NUM_PREDICT', 2400),
+        'num_predict' => (int) env('SEO_AI_OLLAMA_NUM_PREDICT', 3200),
         'num_ctx' => (int) env('SEO_AI_OLLAMA_NUM_CTX', 8192),
         'temperature' => (float) env('SEO_AI_OLLAMA_TEMPERATURE', 0.35),
         // One locale of ~900 words at ~6 tokens/second needs real headroom.
